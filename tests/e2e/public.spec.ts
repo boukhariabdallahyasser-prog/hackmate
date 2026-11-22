@@ -113,3 +113,30 @@ test("the home agenda opens published future events and excludes past events", a
   await page.getByRole("link", { name: "Browse all dates" }).click();
   await expect(page.getByText("Past Event")).toBeVisible();
 });
+
+test("published events support venue and registration filters and calendar export", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/events");
+  await page.getByLabel("City or venue").fill("algiers");
+  await page
+    .getByRole("combobox", { name: "Registration", exact: true })
+    .selectOption("open");
+  await page.getByRole("button", { name: "Apply filter" }).click();
+  await expect(page.locator(".event-card strong")).toHaveText([
+    "Fixture Hackathon",
+  ]);
+  await page.getByRole("link", { name: /Fixture Hackathon/ }).click();
+  const href = await page
+    .getByRole("link", { name: "Download calendar event" })
+    .getAttribute("href");
+  const calendar = await request.get(href!);
+  expect(calendar.headers()["content-type"]).toContain("text/calendar");
+  expect(await calendar.text()).toContain(
+    "Registration deadline · Fixture Hackathon",
+  );
+  expect((await request.get("/events/pending-fixture/calendar")).status()).toBe(
+    404,
+  );
+});

@@ -5,3 +5,6 @@ next-env.d.ts
 src/types/database.ts
 test-results
 playwright-report
+.cloudflare
+.vinext
+dist

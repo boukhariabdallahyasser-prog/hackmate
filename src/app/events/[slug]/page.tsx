@@ -66,6 +66,7 @@ export default async function EventPage({ params }: Props) {
     : null;
   const registration = externalUrl(event.registration_url);
   const cover = httpsUrl(event.cover_path);
+  const deadlinePassed = result.registrationClosed;
   const source =
     externalUrl(event.official_url) ?? externalUrl(event.source_url);
   return (
@@ -95,7 +96,12 @@ export default async function EventPage({ params }: Props) {
         (Algeria time)
       </p>
       {event.registration_deadline && (
-        <p>Registration deadline {eventDate(event.registration_deadline)}</p>
+        <p>
+          {deadlinePassed ? "Registration closed" : "Registration deadline"} ·{" "}
+          <time dateTime={event.registration_deadline}>
+            {eventDate(event.registration_deadline)}
+          </time>
+        </p>
       )}
       <p>{event.description}</p>
       <p>
@@ -114,11 +120,21 @@ export default async function EventPage({ params }: Props) {
           <p>{event.prizes}</p>
         </>
       )}
-      {registration && (
-        <Button asChild>
-          <a href={registration}>Visit registration page</a>
-        </Button>
-      )}
+      <div className="text-links">
+        {registration && !deadlinePassed && (
+          <Button asChild>
+            <a href={registration}>Visit registration page</a>
+          </Button>
+        )}
+        <Link
+          className="underlined"
+          href={`/events/${event.slug}/calendar`}
+          prefetch={false}
+          download
+        >
+          Download calendar event
+        </Link>
+      </div>
       {source && (
         <p>
           <a href={source}>Visit event source</a>

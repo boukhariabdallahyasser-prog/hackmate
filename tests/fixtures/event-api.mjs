@@ -19,6 +19,9 @@ const events = [
     starts_at: fromToday(10),
     ends_at: fromToday(11),
     format: "online",
+    location: "Algiers, ENSIA",
+    registration_deadline: fromToday(8),
+    registration_url: "https://example.com/register",
     source_status: "community",
     moderation_status: "approved",
     source_url: "https://example.com/event",
@@ -39,6 +42,7 @@ events.push(
     slug: "fixture-hackathon-finals",
     title: "Fixture Hackathon: Finals",
     starts_at: fromToday(30),
+    registration_deadline: fromToday(-1),
     ends_at: fromToday(31),
   },
   {
@@ -47,6 +51,8 @@ events.push(
     slug: "fixture-hackathon-offline",
     title: "Fixture Hackathon: In Person",
     format: "offline",
+    location: "Oran",
+    registration_deadline: null,
   },
   {
     ...events[0],
@@ -72,8 +78,16 @@ createServer((request, response) => {
   const titlePattern = title?.startsWith("imatch.")
     ? new RegExp(title.slice(7), "i")
     : null;
-  const start = url.searchParams.get("starts_at");
-  const startsAfter = start?.startsWith("gte.") ? start.slice(4) : "";
+  const locations = url.searchParams.get("location");
+  const locationPattern = locations?.startsWith("imatch.")
+    ? new RegExp(locations.slice(7), "i")
+    : null;
+  const starts = url.searchParams.getAll("starts_at");
+  const deadline = url.searchParams
+    .get("registration_deadline")
+    ?.replace(/^gte\./, "");
+  const onlyRegistrationLink =
+    url.searchParams.get("registration_url") === "not.is.null";
   const exclude = url.searchParams.get("id");
   const rows = events.filter(
     (event) =>
@@ -82,7 +96,14 @@ createServer((request, response) => {
         return !filter || filter === `eq.${event[field]}`;
       }) &&
       (!titlePattern || titlePattern.test(event.title)) &&
-      (!startsAfter || (event.starts_at ?? "") >= startsAfter) &&
+      (!locationPattern || locationPattern.test(event.location ?? "")) &&
+      starts.every((filter) =>
+        filter.startsWith("gte.")
+          ? (event.starts_at ?? "") >= filter.slice(4)
+          : (event.starts_at ?? "") < filter.slice(3),
+      ) &&
+      (!deadline || (event.registration_deadline ?? "") >= deadline) &&
+      (!onlyRegistrationLink || !!event.registration_url) &&
       (!exclude || exclude !== `neq.${event.id}`),
   );
   const latest = url.searchParams.get("order")?.startsWith("starts_at.desc");

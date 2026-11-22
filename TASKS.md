@@ -29,3 +29,9 @@
 - The homepage shows upcoming approved events and links directly to the calendar and student registration.
 - The ENSIA setup script can enable the official university domain in the target database with conflict checks.
 - Production launch still needs the existing Vercel project-creation permission resolved and the designated admin to confirm their institutional email.
+
+## Event tools and Workers build
+
+- Added venue, inclusive date range, and open registration filters. Event details show when a registration deadline has passed.
+- Added calendar downloads for published events, including a separate entry for the registration deadline.
+- Added Cloudflare Workers configuration and build commands. Hosted Cloudflare deployment still needs account access, the deployment environment variables, and hosted Supabase verification.
