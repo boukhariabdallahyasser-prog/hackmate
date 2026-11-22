@@ -145,6 +145,13 @@ export default async function StaffPage() {
   return (
     <section className="shell section member-content">
       <h1>Moderation dashboard</h1>
+      {admin && (
+        <Link href="/staff/students" className="staff-review-link">
+          <strong>Student account approvals</strong>
+          <span>Review students who confirmed their university emails →</span>
+        </Link>
+      )}
+
       {unavailable && (
         <p className="notice" role="alert">
           Some staff data is temporarily unavailable.
@@ -215,12 +222,14 @@ export default async function StaffPage() {
                   Review source
                 </a>
               )}
-              <ActionForm
-                action={review.bind(null, "event", item.id)}
-                submit="Record event decision"
-              >
-                <DecisionFields />
-              </ActionForm>
+              {admin && (
+                <ActionForm
+                  action={review.bind(null, "event", item.id)}
+                  submit="Record event decision"
+                >
+                  <DecisionFields />
+                </ActionForm>
+              )}
             </article>
           ))
         ) : (

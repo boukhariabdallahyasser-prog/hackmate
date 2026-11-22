@@ -72,7 +72,8 @@ export async function register(
   if (error)
     return { message: "Registration could not be completed. Try again later." };
   return {
-    message: "Check your university inbox for a confirmation link.",
+    message:
+      "Check your university inbox to confirm your email. An administrator will then review your account.",
     success: true,
   };
 }

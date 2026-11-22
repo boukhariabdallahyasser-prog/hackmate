@@ -23,6 +23,7 @@ export default async function EventsPage({
     format?: string | string[];
     q?: string | string[];
     sort?: string | string[];
+    upcoming?: string | string[];
     page?: string | string[];
   }>;
 }) {
@@ -31,6 +32,7 @@ export default async function EventsPage({
   const format = isFormat(params.format) ? params.format : undefined;
   const search =
     typeof params.q === "string" ? params.q.trim().slice(0, searchLimit) : "";
+  const upcomingOnly = params.upcoming === "1";
   const latestFirst = params.sort === "latest";
   const page =
     typeof params.page === "string" && /^[1-9][0-9]{0,5}$/.test(params.page)
@@ -41,6 +43,7 @@ export default async function EventsPage({
     format,
     search,
     latestFirst,
+    upcomingOnly,
     page,
   });
 
@@ -49,15 +52,23 @@ export default async function EventsPage({
     if (category) query.set("category", category);
     if (format) query.set("format", format);
     if (search) query.set("q", search);
+    if (upcomingOnly) query.set("upcoming", "1");
     if (latestFirst) query.set("sort", "latest");
     return `/events?${query}`;
   }
 
   return (
     <section className="shell section">
-      <h1>Explore events</h1>
+      <h1>{upcomingOnly ? "Upcoming events" : "Explore events"}</h1>
+      <Link
+        className="underlined"
+        href={upcomingOnly ? "/events" : "/events?upcoming=1"}
+      >
+        {upcomingOnly ? "Browse all dates" : "Show upcoming only"}
+      </Link>
       <p className="meta">Browse published technology events across Algeria.</p>
       <form className="filter" action="/events">
+        {upcomingOnly && <input name="upcoming" type="hidden" value="1" />}
         <label className="event-search" htmlFor="q">
           Search by title
           <input

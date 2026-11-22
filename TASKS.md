@@ -16,3 +16,10 @@
 - Formatting, ESLint, TypeScript, and the Next.js production build passed.
 - Seven Vitest tests passed, including embedded PostgreSQL migration replay and access-policy checks.
 - Ten Playwright tests passed on desktop and mobile against the fixture API.
+
+## Student approval and dashboard
+
+- Confirmed university emails create a review request and an in-app notification for administrators.
+- Administrators review requests in the staff dashboard. Approved students choose a specialization and interests before the upcoming-events dashboard opens.
+- Public event publication requires an administrator's approval. Verified members can suggest events.
+- Hosted launch still requires the actual university email domain, a confirmed first admin, Supabase email configuration, and a Vercel deployment.

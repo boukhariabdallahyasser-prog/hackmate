@@ -225,7 +225,9 @@ describe("HackMate database access and workflows", () => {
       await db.query<{ id: string }>("select id from public.skills")
     ).rows[0].id;
     const interest = (
-      await db.query<{ id: string }>("select id from public.interests")
+      await db.query<{ id: string }>(
+        "select id from public.interests where name = 'Open source'",
+      )
     ).rows[0].id;
     await as(
       "authenticated",
@@ -477,5 +479,87 @@ describe("HackMate database access and workflows", () => {
     ).toEqual([
       { message: "A published event you saved or submitted was removed." },
     ]);
+  });
+  test("confirmed email queues approval once, protects the queue, and unlocks onboarding after review", async () => {
+    const applicant = "00000000-0000-4000-8000-000000000055";
+    await db.query(
+      "insert into auth.users values ($1,'fresh@campus.test',null)",
+      [applicant],
+    );
+    const query =
+      "select status from public.student_approvals where user_id=$1";
+    expect(
+      (await as("authenticated", applicant, query, [applicant])).rows,
+    ).toEqual([]);
+    await db.query(
+      "update auth.users set email_confirmed_at=now() where id=$1",
+      [applicant],
+    );
+    await db.query(
+      "update auth.users set email_confirmed_at=now() where id=$1",
+      [applicant],
+    );
+    expect(
+      (await as("authenticated", applicant, query, [applicant])).rows,
+    ).toEqual([{ status: "pending" }]);
+    expect(
+      (await as("authenticated", teammate, query, [applicant])).rows,
+    ).toEqual([]);
+    const notices = await as(
+      "authenticated",
+      staff,
+      "select id from public.notifications where message like 'A student confirmed%'",
+    );
+    expect(notices.rows).toHaveLength(1);
+    await expect(
+      as(
+        "authenticated",
+        applicant,
+        "select public.review_student($1,true,'Valid enrollment')",
+        [applicant],
+      ),
+    ).rejects.toThrow("not authorized");
+    const selected = (
+      await db.query<{ id: string }>(
+        "select id from public.interests where name='Cybersecurity'",
+      )
+    ).rows[0].id;
+    const onboarding =
+      "select public.complete_student_onboarding('Fresh Student','fresh_student','Cybersecurity',$1)";
+    await expect(
+      as("authenticated", applicant, onboarding, [[selected]]),
+    ).rejects.toThrow("Not authorized");
+    await as(
+      "authenticated",
+      staff,
+      "select public.review_student($1,true,'Confirmed institutional email')",
+      [applicant],
+    );
+    expect(
+      (await as("authenticated", applicant, query, [applicant])).rows,
+    ).toEqual([{ status: "approved" }]);
+    await as("authenticated", applicant, onboarding, [[selected]]);
+    expect(
+      (
+        await as(
+          "authenticated",
+          applicant,
+          "select onboarded_at is not null as onboarded from public.account_access",
+        )
+      ).rows,
+    ).toEqual([{ onboarded: true }]);
+    expect(
+      (
+        await as(
+          "authenticated",
+          applicant,
+          "select field_of_study from public.profiles where id=$1",
+          [applicant],
+        )
+      ).rows,
+    ).toEqual([{ field_of_study: "Cybersecurity" }]);
+    await expect(
+      as("authenticated", applicant, onboarding, [[selected]]),
+    ).rejects.toThrow("Onboarding is unavailable");
   });
 });

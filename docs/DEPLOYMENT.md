@@ -9,3 +9,5 @@
 5. Exercise registration, email delivery and recovery, verification uploads and reviews, event moderation, and team enrollment on the preview. Run an independent-connection capacity test before enabling public recruitment.
 
 Keep Supabase secret and service-role keys out of Vercel client environment variables and Git. For a hosted project that receives real evidence, define retention and access procedures, backups, and recovery before accepting submissions. Production migration and launch require owner approval.
+
+Student approval requests are queued once the university email is confirmed. Administrators receive in-app notifications and can approve or decline requests at `/staff/students`. The initial super admin must be bootstrapped after email confirmation using the procedure in [Development](DEVELOPMENT.md). Use the exact official domain entered by the institution. Approval does not send a separate email.

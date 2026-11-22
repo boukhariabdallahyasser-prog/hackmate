@@ -13,7 +13,7 @@ export async function review(
   form: FormData,
 ): Promise<FormState> {
   const { client } = await requireMember(
-    kind === "verification" ? "admin" : "moderator",
+    kind === "verification" || kind === "event" ? "admin" : "moderator",
   );
   const reason = textField(form, "reason");
   const decision = textField(form, "decision");

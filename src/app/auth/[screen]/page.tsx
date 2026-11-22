@@ -55,8 +55,8 @@ export default async function AuthPage({
       <h1>{details.title}</h1>
       {screen === "register" && (
         <p>
-          Use your university email. You can request student verification after
-          confirming your address.
+          Use your university email. An administrator will review your account
+          after confirming your address.
         </p>
       )}
       <ActionForm action={details.action} submit={details.submit}>

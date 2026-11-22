@@ -52,12 +52,14 @@ export async function listEvents({
   format,
   search,
   latestFirst,
+  upcomingOnly,
   page,
 }: {
   category?: keyof typeof categories;
   format?: keyof typeof formats;
   search: string;
   latestFirst: boolean;
+  upcomingOnly?: boolean;
   page: number;
 }) {
   const supabase = publicClient();
@@ -68,6 +70,7 @@ export async function listEvents({
     .from("events")
     .select(columns)
     .eq("moderation_status", "approved");
+  if (upcomingOnly) query = query.gte("starts_at", new Date().toISOString());
   if (category) query = query.eq("category", category);
   if (format) query = query.eq("format", format);
   if (search) {

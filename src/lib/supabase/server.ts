@@ -33,7 +33,7 @@ export const memberSession = cache(async () => {
   if (!id) return null;
   const { data: access } = await client
     .from("account_access")
-    .select("role,status")
+    .select("role,status,onboarded_at")
     .eq("user_id", id)
     .maybeSingle();
   return { client, id, access };
@@ -48,6 +48,12 @@ export async function requireMember(
   if (access?.status === "suspended") redirect("/auth/suspended");
   if (level !== "signed-in" && access?.status !== "verified")
     redirect("/account");
+  if (
+    level === "verified" &&
+    access?.role === "student" &&
+    !access.onboarded_at
+  )
+    redirect("/account/onboarding");
   if (
     level === "moderator" &&
     !["moderator", "admin", "super_admin"].includes(access?.role ?? "")

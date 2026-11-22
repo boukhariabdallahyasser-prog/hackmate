@@ -97,20 +97,29 @@ export type Database = {
         Update: { key?: string; value?: string; updated_at?: string }
         Relationships: []
       }
+      student_approvals: {
+        Row: { user_id: string; university_id: string; university_email: string; status: string; requested_at: string; reviewed_at: string | null; reviewed_by: string | null; review_reason: string | null }
+        Insert: never
+        Update: never
+        Relationships: []
+      }
       account_access: {
         Row: {
+          onboarded_at: string | null
           role: string
           status: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          onboarded_at?: string | null
           role?: string
           status?: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          onboarded_at?: string | null
           role?: string
           status?: string
           updated_at?: string
@@ -562,6 +571,9 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      review_student: { Args: { member: string; approved: boolean; reason: string }; Returns: undefined }
+      complete_student_onboarding: { Args: { name: string; handle: string; field: string; selected_interests: string[] }; Returns: undefined }
+
       cancel_invitation: { Args: { invitation: string }; Returns: undefined }
       restrict_team: { Args: { team: string; reason: string }; Returns: undefined }
       unpublish_event: { Args: { event: string; reason: string }; Returns: undefined }

@@ -17,11 +17,10 @@ export default async function AccountLayout({
     <div className="shell section member-layout">
       <nav aria-label="Account" className="member-nav">
         <Link href="/account">Overview</Link>
-        <Link href="/account/profile">Profile</Link>
-        <Link href="/account/verification">Verification</Link>
         <Link href="/account/notifications">Notifications</Link>
-        {verified && (
+        {verified && (access?.role !== "student" || access.onboarded_at) && (
           <>
+            <Link href="/account/profile">Profile</Link>
             <Link href="/account/submissions">My events</Link>
             <Link href="/community">Teammates</Link>
             <Link href="/teams">Teams</Link>
