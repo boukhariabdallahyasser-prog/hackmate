@@ -1,9 +1,11 @@
 # Database
 
-The existing HackMate Supabase project reported two migrations, `20261122214251_identity_security_foundation` and `20261122214527_event_team_foundation`. The applied SQL was recovered from migration history and the TypeScript types were generated from the hosted schema. The hosted project was inspected with read-only queries.
+The first two migrations match the existing HackMate Supabase project. The third extends the schema with private verification policies, normalized skill and interest associations, team invitations, event interest, reports, settings, and notifications.
 
-The 11 public tables have RLS enabled. The schema covers university domains, account access, profiles, verification requests, audit logs, events, bookmarks, teams, members, and applications. There is an application-review RPC. Its concurrency behavior still needs isolated integration tests.
+`account_access` is the authorization record for role and verification status. Confirmed university emails map to an active university domain. Manual review binds a verified profile to that institution. Profiles and their taxonomies respect member-only visibility and the student's discoverability preference.
 
-The project reported zero approved email domains and zero published events. The evidence bucket is private and has size and MIME restrictions. The inspection found no storage policy specific to that bucket. Add and verify signed-in upload and staff review permissions before opening verification.
+Row-level security and explicit grants cover the public schema. Events have a public approved-only view of their rows via RLS. Staff decisions use audited transactions. Invitation acceptance, application approval, and leadership changes lock the same team row before modifying members. The team leader consumes one roster slot and is represented by `teams.leader_id`.
 
-Missing schema areas include taxonomies and associations, invitations, notifications, reports, moderation actions, and platform settings. Critical updates require incremental migrations and refreshed generated types.
+Verification stays in the private `verification-evidence` bucket. Owner-based uploads use unique object paths. Staff access requires a referenced verification request and current database permissions. Download links expire after 60 seconds.
+
+The embedded PostgreSQL tests verify a clean migration replay and role boundaries. Hosted Supabase Auth, email, Storage, and real concurrent connections should be verified in the preview environment.

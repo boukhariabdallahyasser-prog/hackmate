@@ -104,7 +104,7 @@ export async function getEvent(slug: string) {
   const { data, error } = await supabase
     .from("events")
     .select(
-      `${columns}, description, ends_at, registration_deadline, registration_url, official_url, source_url, eligibility, prizes, min_team_size, max_team_size`,
+      `${columns}, description, ends_at, registration_deadline, registration_url, official_url, source_url, eligibility, prizes, min_team_size, max_team_size, cover_path, event_skills(skill_id)`,
     )
     .eq("moderation_status", "approved")
     .eq("slug", slug)
@@ -117,6 +117,39 @@ export async function getEvent(slug: string) {
   }
   if (!data) return { status: "missing" } as const;
   return { status: "found", event: data } as const;
+}
+
+export async function relatedEvents(event: {
+  id: string;
+  category: string;
+  starts_at: string;
+}) {
+  const supabase = publicClient();
+  if (!supabase) return [];
+  const { data } = await supabase
+    .from("events")
+    .select("id,slug,title,starts_at")
+    .eq("moderation_status", "approved")
+    .eq("category", event.category)
+    .neq("id", event.id)
+    .gte("starts_at", event.starts_at)
+    .order("starts_at")
+    .limit(3)
+    .abortSignal(AbortSignal.timeout(3000));
+  return (data ?? []).filter((related) => related.id !== event.id).slice(0, 3);
+}
+
+export async function eventSkillNames(ids: string[]) {
+  if (!ids.length) return [];
+  const supabase = publicClient();
+  if (!supabase) return [];
+  const { data } = await supabase
+    .from("skills")
+    .select("name")
+    .in("id", ids)
+    .order("name")
+    .abortSignal(AbortSignal.timeout(3000));
+  return data?.map((skill) => skill.name) ?? [];
 }
 
 export function eventDate(value: string) {

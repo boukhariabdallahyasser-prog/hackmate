@@ -305,3 +305,114 @@ a.event-card:hover {
     flex-direction: column;
   }
 }
+
+.member-layout {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: start;
+}
+.member-nav {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.8rem;
+  border-inline-end: 1px solid var(--border);
+}
+.member-content,
+.form-page,
+.card-list,
+.form-stack fieldset {
+  display: grid;
+  min-width: 0;
+  gap: 1rem;
+}
+.form-page,
+.form-stack {
+  width: min(100%, 39rem);
+}
+.form-stack legend {
+  font-weight: 750;
+}
+.form-stack label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 650;
+}
+.form-stack input:not([type="checkbox"]),
+.form-stack select,
+.form-stack textarea {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: white;
+  min-height: 2.8rem;
+  min-width: 0;
+  padding: 0.65rem;
+}
+.form-stack textarea {
+  resize: vertical;
+  min-height: 5.5rem;
+}
+.form-stack .checkbox {
+  display: flex;
+  align-items: center;
+}
+.form-stack .button {
+  justify-self: start;
+}
+.form-stack p[role="alert"],
+.form-stack p[role="status"] {
+  margin-top: 0.8rem;
+  overflow-wrap: anywhere;
+}
+.form-stack [role="alert"] {
+  color: #892725;
+}
+.text-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+}
+.text-links a,
+.underlined,
+.form-page > p a {
+  text-decoration: underline;
+}
+.card-list > ul {
+  display: grid;
+  gap: 0.65rem;
+}
+.notice {
+  overflow-wrap: anywhere;
+}
+details > summary {
+  cursor: pointer;
+  font-weight: 720;
+}
+details[open] > summary {
+  margin-bottom: 1rem;
+}
+.event-cover img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 5 / 2;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+@media (max-width: 760px) {
+  .member-layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .member-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    border-inline-end: 0;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.85rem;
+  }
+  .site-header nav {
+    flex-wrap: wrap;
+  }
+}

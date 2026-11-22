@@ -70,3 +70,26 @@ test("a visitor can open a published event while a pending event stays hidden", 
   await page.goto("/events/pending-fixture");
   await expect(page.getByText("This page could not be found.")).toBeVisible();
 });
+
+test("account navigation protects private pages and exposes registration and recovery", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Account", exact: true }).click();
+  await expect(page).toHaveURL(/\/auth\/sign-in$/);
+  await expect(
+    page.getByRole("heading", { name: "Sign in to HackMate" }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "Create an account" }).click();
+  await expect(
+    page.getByRole("textbox", { name: "University email" }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "Forgot your password?" }).click();
+  await expect(
+    page.getByRole("button", { name: "Send reset link" }),
+  ).toBeVisible();
+  await page.goto("/staff");
+  await expect(page).toHaveURL(/\/auth\/sign-in$/);
+  await page.goto("/teams");
+  await expect(page).toHaveURL(/\/auth\/sign-in$/);
+});
