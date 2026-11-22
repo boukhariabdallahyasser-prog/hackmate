@@ -70,3 +70,73 @@ test("a visitor can open a published event while a pending event stays hidden", 
   await page.goto("/events/pending-fixture");
   await expect(page.getByText("This page could not be found.")).toBeVisible();
 });
+
+test("account navigation protects private pages and exposes registration and recovery", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Account", exact: true }).click();
+  await expect(page).toHaveURL(/\/auth\/sign-in$/);
+  await expect(
+    page.getByRole("heading", { name: "Sign in to HackMate" }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "Create an account" }).click();
+  await expect(
+    page.getByRole("textbox", { name: "University email" }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "Forgot your password?" }).click();
+  await expect(
+    page.getByRole("button", { name: "Send reset link" }),
+  ).toBeVisible();
+  await page.goto("/staff");
+  await expect(page).toHaveURL(/\/auth\/sign-in$/);
+  await page.goto("/teams");
+  await expect(page).toHaveURL(/\/auth\/sign-in$/);
+});
+
+test("the home agenda opens published future events and excludes past events", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const agenda = page.getByRole("region", { name: "Coming up" });
+  await expect(
+    agenda.getByRole("link", { name: /Fixture Hackathon/ }).first(),
+  ).toBeVisible();
+  await expect(agenda.getByText("Past Event")).toHaveCount(0);
+  await expect(agenda.getByText("Pending Fixture")).toHaveCount(0);
+  await agenda.getByRole("link", { name: "View the calendar" }).click();
+  await expect(page).toHaveURL(/\/events\?upcoming=1$/);
+  await expect(
+    page.getByRole("heading", { name: "Upcoming events" }),
+  ).toBeVisible();
+  await expect(page.getByText("Past Event")).toHaveCount(0);
+  await page.getByRole("link", { name: "Browse all dates" }).click();
+  await expect(page.getByText("Past Event")).toBeVisible();
+});
+
+test("published events support venue and registration filters and calendar export", async ({
+  page,
+  request,
+}) => {
+  await page.goto("/events");
+  await page.getByLabel("City or venue").fill("algiers");
+  await page
+    .getByRole("combobox", { name: "Registration", exact: true })
+    .selectOption("open");
+  await page.getByRole("button", { name: "Apply filter" }).click();
+  await expect(page.locator(".event-card strong")).toHaveText([
+    "Fixture Hackathon",
+  ]);
+  await page.getByRole("link", { name: /Fixture Hackathon/ }).click();
+  const href = await page
+    .getByRole("link", { name: "Download calendar event" })
+    .getAttribute("href");
+  const calendar = await request.get(href!);
+  expect(calendar.headers()["content-type"]).toContain("text/calendar");
+  expect(await calendar.text()).toContain(
+    "Registration deadline · Fixture Hackathon",
+  );
+  expect((await request.get("/events/pending-fixture/calendar")).status()).toBe(
+    404,
+  );
+});

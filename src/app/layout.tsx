@@ -35,6 +35,7 @@ export default function RootLayout({
             <nav aria-label="Main">
               <Link href="/events">Events</Link>
               <Link href="/about">About</Link>
+              <Link href="/account">Account</Link>
             </nav>
           </div>
         </header>

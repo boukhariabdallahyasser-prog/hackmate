@@ -16,3 +16,7 @@
 | 11    | Configure Vercel preview, callbacks, monitoring, and recovery.                                                             | The owner can review and approve the tested preview before production.                                            |
 
 The first public discovery milestone includes browsing, title search, category and format filters, start-date ordering, pagination, and shareable detail pages for approved events. The remaining dependencies for identity are a vetted domain registry, an isolated place to test approval workflows, and the database protections listed in Phase 2. See [TASKS.md](../TASKS.md) for the latest check results and GitHub publishing status.
+
+## Product branch
+
+The product branch implements the signed-in workflows on top of the public directory. Embedded PostgreSQL tests replay the migrations, and fixture-based browser checks run on desktop and mobile. The remaining release gates are a hosted preview with real authentication and document uploads, two-connection database testing, vetted domains, and owner approval for production.

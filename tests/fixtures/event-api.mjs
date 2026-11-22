@@ -1,5 +1,12 @@
 import { createServer } from "node:http";
 
+const baseDate = new Date();
+function fromToday(days) {
+  return new Date(
+    baseDate.getTime() + days * 24 * 60 * 60 * 1000,
+  ).toISOString();
+}
+
 const events = [
   {
     id: "00000000-0000-0000-0000-000000000001",
@@ -9,9 +16,12 @@ const events = [
     description:
       "This event is only present in the automated test environment.",
     organizer: "Test organizer",
-    starts_at: "2027-01-10T09:00:00Z",
-    ends_at: "2027-01-11T09:00:00Z",
+    starts_at: fromToday(10),
+    ends_at: fromToday(11),
     format: "online",
+    location: "Algiers, ENSIA",
+    registration_deadline: fromToday(8),
+    registration_url: "https://example.com/register",
     source_status: "community",
     moderation_status: "approved",
     source_url: "https://example.com/event",
@@ -31,8 +41,9 @@ events.push(
     id: "00000000-0000-0000-0000-000000000003",
     slug: "fixture-hackathon-finals",
     title: "Fixture Hackathon: Finals",
-    starts_at: "2027-02-01T09:00:00Z",
-    ends_at: "2027-02-01T10:00:00Z",
+    starts_at: fromToday(30),
+    registration_deadline: fromToday(-1),
+    ends_at: fromToday(31),
   },
   {
     ...events[0],
@@ -40,6 +51,17 @@ events.push(
     slug: "fixture-hackathon-offline",
     title: "Fixture Hackathon: In Person",
     format: "offline",
+    location: "Oran",
+    registration_deadline: null,
+  },
+  {
+    ...events[0],
+    id: "00000000-0000-0000-0000-000000000005",
+    slug: "past-event",
+    title: "Past Event",
+    category: "workshop",
+    starts_at: fromToday(-3),
+    ends_at: fromToday(-2),
   },
 );
 
@@ -56,13 +78,33 @@ createServer((request, response) => {
   const titlePattern = title?.startsWith("imatch.")
     ? new RegExp(title.slice(7), "i")
     : null;
+  const locations = url.searchParams.get("location");
+  const locationPattern = locations?.startsWith("imatch.")
+    ? new RegExp(locations.slice(7), "i")
+    : null;
+  const starts = url.searchParams.getAll("starts_at");
+  const deadline = url.searchParams
+    .get("registration_deadline")
+    ?.replace(/^gte\./, "");
+  const onlyRegistrationLink =
+    url.searchParams.get("registration_url") === "not.is.null";
+  const exclude = url.searchParams.get("id");
   const rows = events.filter(
     (event) =>
       filters.every((field) => {
         const filter = url.searchParams.get(field);
         return !filter || filter === `eq.${event[field]}`;
       }) &&
-      (!titlePattern || titlePattern.test(event.title)),
+      (!titlePattern || titlePattern.test(event.title)) &&
+      (!locationPattern || locationPattern.test(event.location ?? "")) &&
+      starts.every((filter) =>
+        filter.startsWith("gte.")
+          ? (event.starts_at ?? "") >= filter.slice(4)
+          : (event.starts_at ?? "") < filter.slice(3),
+      ) &&
+      (!deadline || (event.registration_deadline ?? "") >= deadline) &&
+      (!onlyRegistrationLink || !!event.registration_url) &&
+      (!exclude || exclude !== `neq.${event.id}`),
   );
   const latest = url.searchParams.get("order")?.startsWith("starts_at.desc");
   rows.sort((a, b) => {

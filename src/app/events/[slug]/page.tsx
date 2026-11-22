@@ -3,7 +3,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { Button } from "@/components/ui/button";
-import { eventDate, externalUrl, getEvent, sourceStatus } from "@/lib/events";
+import { ActionForm } from "@/components/action-form";
+import { reportItem, saveBookmark } from "@/app/account/event/actions";
+import {
+  eventDate,
+  eventSkillNames,
+  externalUrl,
+  getEvent,
+  relatedEvents,
+  sourceStatus,
+} from "@/lib/events";
+import { memberSession } from "@/lib/supabase/server";
+import { httpsUrl } from "@/lib/forms";
 
 export const dynamic = "force-dynamic";
 const eventForRequest = cache(getEvent);
@@ -39,7 +50,23 @@ export default async function EventPage({ params }: Props) {
   }
 
   const { event } = result;
+  const [session, related, skills] = await Promise.all([
+    memberSession(),
+    relatedEvents(event),
+    eventSkillNames(event.event_skills?.map((skill) => skill.skill_id) ?? []),
+  ]);
+  const verified = session?.access?.status === "verified";
+  const bookmark = verified
+    ? await session.client
+        .from("event_bookmarks")
+        .select("event_id")
+        .eq("event_id", event.id)
+        .eq("user_id", session.id)
+        .maybeSingle()
+    : null;
   const registration = externalUrl(event.registration_url);
+  const cover = httpsUrl(event.cover_path);
+  const deadlinePassed = result.registrationClosed;
   const source =
     externalUrl(event.official_url) ?? externalUrl(event.source_url);
   return (
@@ -47,6 +74,19 @@ export default async function EventPage({ params }: Props) {
       <Link href="/events">All events</Link>
       <p className="meta">{sourceStatus(event.source_status)}</p>
       <h1>{event.title}</h1>
+      {cover && (
+        <div className="event-cover">
+          {/* eslint-disable-next-line @next/next/no-img-element -- Externally hosted submission covers are loaded directly after URL validation. */}
+          <img
+            src={cover}
+            alt=""
+            width={900}
+            height={360}
+            referrerPolicy="no-referrer"
+            loading="lazy"
+          />
+        </div>
+      )}
       <p>
         {event.organizer} · {event.location ?? event.format}
       </p>
@@ -56,9 +96,18 @@ export default async function EventPage({ params }: Props) {
         (Algeria time)
       </p>
       {event.registration_deadline && (
-        <p>Registration deadline {eventDate(event.registration_deadline)}</p>
+        <p>
+          {deadlinePassed ? "Registration closed" : "Registration deadline"} ·{" "}
+          <time dateTime={event.registration_deadline}>
+            {eventDate(event.registration_deadline)}
+          </time>
+        </p>
       )}
       <p>{event.description}</p>
+      <p>
+        Team size · {event.min_team_size}–{event.max_team_size}
+      </p>
+      {skills.length > 0 && <p>Required skills · {skills.join(", ")}</p>}
       {event.eligibility && (
         <>
           <h2>Eligibility</h2>
@@ -71,15 +120,68 @@ export default async function EventPage({ params }: Props) {
           <p>{event.prizes}</p>
         </>
       )}
-      {registration && (
-        <Button asChild>
-          <a href={registration}>Visit registration page</a>
-        </Button>
-      )}
+      <div className="text-links">
+        {registration && !deadlinePassed && (
+          <Button asChild>
+            <a href={registration}>Visit registration page</a>
+          </Button>
+        )}
+        <Link
+          className="underlined"
+          href={`/events/${event.slug}/calendar`}
+          prefetch={false}
+          download
+        >
+          Download calendar event
+        </Link>
+      </div>
       {source && (
         <p>
           <a href={source}>Visit event source</a>
         </p>
+      )}
+      {verified && (
+        <div className="card-list">
+          <div className="text-links">
+            <Link href={`/teams?event=${event.id}`}>Find event teams</Link>
+            <Link href={`/community?event=${event.id}`}>Find teammates</Link>
+          </div>
+          {!bookmark?.error && (
+            <ActionForm
+              action={saveBookmark.bind(null, event.id, !!bookmark?.data)}
+              submit={bookmark?.data ? "Remove bookmark" : "Bookmark event"}
+            />
+          )}
+          <details className="notice">
+            <summary>Report event</summary>
+            <ActionForm
+              action={reportItem.bind(null, "event", event.id)}
+              submit="Send report"
+            >
+              <label>
+                Reason
+                <textarea
+                  name="reason"
+                  minLength={10}
+                  maxLength={1000}
+                  required
+                />
+              </label>
+            </ActionForm>
+          </details>
+        </div>
+      )}
+      {!!related.length && (
+        <div className="card-list">
+          <h2>Related events</h2>
+          <ul>
+            {related.map((item) => (
+              <li key={item.id}>
+                <Link href={`/events/${item.slug}`}>{item.title}</Link>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </article>
   );
