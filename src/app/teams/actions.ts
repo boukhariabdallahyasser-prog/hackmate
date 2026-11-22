@@ -132,6 +132,7 @@ export async function updateTeam(
         member: member.data,
         transfer: decision === "transfer",
       });
+      break;
     case "cancel-invitation":
       result = await client.rpc("cancel_invitation", { invitation: target });
       revalidatePath("/staff");
