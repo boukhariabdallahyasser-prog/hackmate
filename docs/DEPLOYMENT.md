@@ -11,3 +11,7 @@
 Keep Supabase secret and service-role keys out of Vercel client environment variables and Git. For a hosted project that receives real evidence, define retention and access procedures, backups, and recovery before accepting submissions. Production migration and launch require owner approval.
 
 Student approval requests are queued once the university email is confirmed. Administrators receive in-app notifications and can approve or decline requests at `/staff/students`. The initial super admin must be bootstrapped after email confirmation using the procedure in [Development](DEVELOPMENT.md). Use the exact official domain entered by the institution. Approval does not send a separate email.
+
+## ENSIA launch
+
+Use [ensia.sql](../supabase/bootstrap/ensia.sql) to enable `@ensia.edu.dz` registration in the intended environment after applying migrations. The script can be rerun and stops if the domain is disabled or assigned to another institution. Confirm that the designated first administrator can receive mail at the intended address. Only grant the initial super-admin role once that user has confirmed their university email. For email delivery to students outside the Supabase project team, use a configured SMTP provider.

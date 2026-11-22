@@ -1,5 +1,12 @@
 import { createServer } from "node:http";
 
+const baseDate = new Date();
+function fromToday(days) {
+  return new Date(
+    baseDate.getTime() + days * 24 * 60 * 60 * 1000,
+  ).toISOString();
+}
+
 const events = [
   {
     id: "00000000-0000-0000-0000-000000000001",
@@ -9,8 +16,8 @@ const events = [
     description:
       "This event is only present in the automated test environment.",
     organizer: "Test organizer",
-    starts_at: "2027-01-10T09:00:00Z",
-    ends_at: "2027-01-11T09:00:00Z",
+    starts_at: fromToday(10),
+    ends_at: fromToday(11),
     format: "online",
     source_status: "community",
     moderation_status: "approved",
@@ -31,8 +38,8 @@ events.push(
     id: "00000000-0000-0000-0000-000000000003",
     slug: "fixture-hackathon-finals",
     title: "Fixture Hackathon: Finals",
-    starts_at: "2027-02-01T09:00:00Z",
-    ends_at: "2027-02-01T10:00:00Z",
+    starts_at: fromToday(30),
+    ends_at: fromToday(31),
   },
   {
     ...events[0],
@@ -40,6 +47,15 @@ events.push(
     slug: "fixture-hackathon-offline",
     title: "Fixture Hackathon: In Person",
     format: "offline",
+  },
+  {
+    ...events[0],
+    id: "00000000-0000-0000-0000-000000000005",
+    slug: "past-event",
+    title: "Past Event",
+    category: "workshop",
+    starts_at: fromToday(-3),
+    ends_at: fromToday(-2),
   },
 );
 
@@ -56,13 +72,18 @@ createServer((request, response) => {
   const titlePattern = title?.startsWith("imatch.")
     ? new RegExp(title.slice(7), "i")
     : null;
+  const start = url.searchParams.get("starts_at");
+  const startsAfter = start?.startsWith("gte.") ? start.slice(4) : "";
+  const exclude = url.searchParams.get("id");
   const rows = events.filter(
     (event) =>
       filters.every((field) => {
         const filter = url.searchParams.get(field);
         return !filter || filter === `eq.${event[field]}`;
       }) &&
-      (!titlePattern || titlePattern.test(event.title)),
+      (!titlePattern || titlePattern.test(event.title)) &&
+      (!startsAfter || (event.starts_at ?? "") >= startsAfter) &&
+      (!exclude || exclude !== `neq.${event.id}`),
   );
   const latest = url.searchParams.get("order")?.startsWith("starts_at.desc");
   rows.sort((a, b) => {

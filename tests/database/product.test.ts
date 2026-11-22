@@ -562,4 +562,25 @@ describe("HackMate database access and workflows", () => {
       as("authenticated", applicant, onboarding, [[selected]]),
     ).rejects.toThrow("Onboarding is unavailable");
   });
+  test("ENSIA setup can be rerun without overriding existing settings", async () => {
+    const seed = await readFile(
+      new URL("../../supabase/bootstrap/ensia.sql", import.meta.url),
+      "utf8",
+    );
+    await db.exec(seed);
+    await db.exec(seed);
+    const domains = await db.query(
+      "select domain from public.university_email_domains where domain = 'ensia.edu.dz'",
+    );
+    expect(domains.rows).toEqual([{ domain: "ensia.edu.dz" }]);
+    await db.exec(
+      "update public.university_email_domains set active=false where domain='ensia.edu.dz'",
+    );
+    await expect(db.exec(seed)).rejects.toThrow("Review the existing ENSIA");
+    await db.exec("rollback");
+    const result = await db.query(
+      "select active from public.university_email_domains where domain='ensia.edu.dz'",
+    );
+    expect(result.rows).toEqual([{ active: false }]);
+  });
 });

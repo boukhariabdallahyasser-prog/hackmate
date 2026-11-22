@@ -93,3 +93,23 @@ test("account navigation protects private pages and exposes registration and rec
   await page.goto("/teams");
   await expect(page).toHaveURL(/\/auth\/sign-in$/);
 });
+
+test("the home agenda opens published future events and excludes past events", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const agenda = page.getByRole("region", { name: "Coming up" });
+  await expect(
+    agenda.getByRole("link", { name: /Fixture Hackathon/ }).first(),
+  ).toBeVisible();
+  await expect(agenda.getByText("Past Event")).toHaveCount(0);
+  await expect(agenda.getByText("Pending Fixture")).toHaveCount(0);
+  await agenda.getByRole("link", { name: "View the calendar" }).click();
+  await expect(page).toHaveURL(/\/events\?upcoming=1$/);
+  await expect(
+    page.getByRole("heading", { name: "Upcoming events" }),
+  ).toBeVisible();
+  await expect(page.getByText("Past Event")).toHaveCount(0);
+  await page.getByRole("link", { name: "Browse all dates" }).click();
+  await expect(page.getByText("Past Event")).toBeVisible();
+});

@@ -23,3 +23,9 @@
 - Administrators review requests in the staff dashboard. Approved students choose a specialization and interests before the upcoming-events dashboard opens.
 - Public event publication requires an administrator's approval. Verified members can suggest events.
 - Hosted launch still requires the actual university email domain, a confirmed first admin, Supabase email configuration, and a Vercel deployment.
+
+## Launch preparation
+
+- The homepage shows upcoming approved events and links directly to the calendar and student registration.
+- The ENSIA setup script can enable the official university domain in the target database with conflict checks.
+- Production launch still needs the existing Vercel project-creation permission resolved and the designated admin to confirm their institutional email.

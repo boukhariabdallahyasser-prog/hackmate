@@ -102,7 +102,7 @@ nav a:hover,
 .hero-grid {
   display: grid;
   align-items: center;
-  grid-template-columns: 1.25fr 1fr;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
   gap: 3rem;
   min-height: 32rem;
   padding-block: 4.5rem;
@@ -150,26 +150,70 @@ h2 {
 .button:hover {
   background: #b6e953;
 }
-.hero-art {
-  display: grid;
-  grid-template-columns: auto auto;
+.home-actions {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.8rem;
-  aspect-ratio: 1.23;
-  min-width: 0;
-  border: 1px solid #52644a;
-  background:
-    radial-gradient(#76936d 1px, transparent 1px) 0 0 / 20px 20px,
-    #1d3325;
-  color: var(--primary);
-  font: 700 clamp(3rem, 10vw, 8rem)/1 monospace;
-  border-radius: var(--radius);
+  flex-wrap: wrap;
+  gap: 1rem;
 }
-.art-cursor {
-  width: 0.085em;
-  height: 0.78em;
-  background: var(--primary);
+.home-join {
+  color: white;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+.home-agenda {
+  color: var(--foreground);
+  background: #f8f8f1;
+  border-radius: var(--radius);
+  border-top: 4px solid var(--primary);
+}
+.home-agenda header,
+.home-agenda-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1rem 1.15rem;
+}
+.home-agenda header {
+  border-bottom: 1px solid var(--border);
+}
+.home-agenda h2 {
+  font-size: 1.45rem;
+}
+.home-agenda-item {
+  display: grid;
+  align-items: center;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  padding: 0.85rem 1.15rem;
+  overflow-wrap: anywhere;
+}
+.home-agenda-item:hover,
+.home-agenda-link:hover {
+  background: #eaf2e0;
+}
+.home-agenda-item strong {
+  display: block;
+}
+.home-agenda-item p,
+.home-agenda-item time {
+  color: var(--muted-foreground);
+  font-size: 0.83rem;
+}
+.home-agenda li + li {
+  border-top: 1px solid var(--border);
+}
+.home-agenda-empty {
+  padding: 1.15rem;
+  color: var(--muted-foreground);
+}
+.home-agenda-link {
+  border-top: 1px solid var(--border);
+  font-weight: 680;
+}
+.home-actions :focus-visible {
+  outline-color: var(--primary);
 }
 .section {
   padding-block: clamp(2.5rem, 6vw, 4rem);
@@ -285,9 +329,6 @@ a.event-card:hover {
     gap: 2rem;
     padding-block: 3.3rem 1.5rem;
   }
-  .hero-art {
-    aspect-ratio: 3;
-  }
   .category-grid,
   .event-grid {
     grid-template-columns: 1fr;
@@ -297,9 +338,6 @@ a.event-card:hover {
   }
 }
 @media (max-width: 375px) {
-  .hero-break {
-    display: none;
-  }
   .section-heading {
     align-items: flex-start;
     flex-direction: column;
