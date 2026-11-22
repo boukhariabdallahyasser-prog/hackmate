@@ -10,3 +10,9 @@
 - [ ] Complete hosted Supabase preview verification with real email, Storage, and separate database connections. The existing hosted project has no preview branch.
 - [ ] Configure the Vercel preview and vetted university domains. The connected Vercel account returned no HackMate project.
 - [ ] Approve production deployment and evidence retention procedures.
+
+## Verification recorded on this branch
+
+- Formatting, ESLint, TypeScript, and the Next.js production build passed.
+- Seven Vitest tests passed, including embedded PostgreSQL migration replay and access-policy checks.
+- Ten Playwright tests passed on desktop and mobile against the fixture API.
