@@ -23,6 +23,29 @@ describe("Supabase runtime configuration", () => {
     });
   });
 
+  test("production build can initialize without Worker site binding", () => {
+    withoutRuntimeBindings();
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "");
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("CLOUDFLARE_ENV", "");
+    expect(supabaseConfig()).toEqual({
+      url: "https://fqydthbluwwczwaytifz.supabase.co",
+      key: expect.stringMatching(/^sb_publishable_/),
+    });
+  });
+
+  test("preview environment cannot use production fallback", () => {
+    withoutRuntimeBindings();
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "");
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("CLOUDFLARE_ENV", "preview");
+    expect(supabaseConfig()).toBeNull();
+  });
+
   test("configured credentials always override production defaults", () => {
     withoutRuntimeBindings();
     vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://hackmate.yazerabdo01.workers.dev");
