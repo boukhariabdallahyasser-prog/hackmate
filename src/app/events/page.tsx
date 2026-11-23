@@ -1,5 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  CalendarDays,
+  ChevronDown,
+  Compass,
+  MapPin,
+  Search,
+  SlidersHorizontal,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { algeriaDateStart } from "@/lib/event-calendar";
 import {
@@ -13,8 +24,22 @@ import {
   sourceStatus,
 } from "@/lib/events";
 
-export const metadata: Metadata = { title: "Events" };
+export const metadata: Metadata = { title: "Explore events" };
 export const dynamic = "force-dynamic";
+
+function dateParts(value: string) {
+  const date = new Date(value);
+  return {
+    day: new Intl.DateTimeFormat("en-DZ", {
+      day: "2-digit",
+      timeZone: "Africa/Algiers",
+    }).format(date),
+    month: new Intl.DateTimeFormat("en-DZ", {
+      month: "short",
+      timeZone: "Africa/Algiers",
+    }).format(date),
+  };
+}
 
 export default async function EventsPage({
   searchParams,
@@ -51,6 +76,7 @@ export default async function EventsPage({
     typeof params.page === "string" && /^[1-9][0-9]{0,5}$/.test(params.page)
       ? Number(params.page)
       : 1;
+
   const result = dateError
     ? null
     : await listEvents({
@@ -81,163 +107,176 @@ export default async function EventsPage({
     return query.size ? `/events?${query}` : "/events";
   }
 
+  const hasFilters = !!(
+    search ||
+    category ||
+    format ||
+    location ||
+    from ||
+    to ||
+    registrationOpen ||
+    latestFirst
+  );
+
   return (
-    <section className="shell section">
-      <h1>{upcomingOnly ? "Upcoming events" : "Explore events"}</h1>
-      <Link className="underlined" href={pageHref(1, !upcomingOnly)}>
-        {upcomingOnly ? "Browse all dates" : "Show upcoming only"}
-      </Link>
-      <p className="meta">Browse published technology events across Algeria.</p>
-      <form className="filter" action="/events">
+    <section className="shell section events-page">
+      <div className="page-intro">
+        <div className="eyebrow page-eyebrow"><Compass size={16} aria-hidden="true" /> EXPLORE OPPORTUNITIES</div>
+        <div className="page-intro-row">
+          <div>
+            <h1>{upcomingOnly ? "Upcoming events" : "Find your next challenge."}</h1>
+            <p>Hackathons, coding competitions, workshops, and student tech events across Algeria. All in one place.</p>
+          </div>
+          <div className="page-intro-mark" aria-hidden="true"><Sparkles size={34} /></div>
+        </div>
+      </div>
+      <nav className="event-view-tabs" aria-label="Event views">
+        <Link className={!upcomingOnly && !registrationOpen ? "selected" : ""} href="/events">All events</Link>
+        <Link className={upcomingOnly && !registrationOpen ? "selected" : ""} href="/events?upcoming=1">Upcoming</Link>
+        <Link className={registrationOpen ? "selected" : ""} href="/events?registration=open">Open registration</Link>
+      </nav>
+      <form className="filter filters-panel" action="/events">
         {upcomingOnly && <input name="upcoming" type="hidden" value="1" />}
-        <label className="event-search" htmlFor="q">
-          Search by title
-          <input
-            id="q"
-            name="q"
-            type="search"
-            maxLength={searchLimit}
-            defaultValue={search}
-          />
-        </label>
-        <label htmlFor="category">
-          Category
-          <select id="category" name="category" defaultValue={category ?? ""}>
-            <option value="">All categories</option>
-            {Object.entries(categories).map(([value, name]) => (
-              <option key={value} value={value}>
-                {name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label htmlFor="format">
-          Format
-          <select id="format" name="format" defaultValue={format ?? ""}>
-            <option value="">All formats</option>
-            {Object.entries(formats).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label htmlFor="sort">
-          Sort by start date
-          <select
-            id="sort"
-            name="sort"
-            defaultValue={latestFirst ? "latest" : ""}
-          >
-            <option value="">Earliest first</option>
-            <option value="latest">Latest first</option>
-          </select>
-        </label>
-        <label>
-          City or venue
-          <input
-            name="location"
-            type="search"
-            maxLength={searchLimit}
-            defaultValue={location}
-          />
-        </label>
-        <label>
-          From date
-          <input
-            name="from"
-            type="date"
-            defaultValue={
-              from && typeof params.from === "string" ? params.from : ""
-            }
-          />
-        </label>
-        <label>
-          Through date
-          <input
-            name="to"
-            type="date"
-            defaultValue={to && typeof params.to === "string" ? params.to : ""}
-          />
-        </label>
-        <label>
-          Registration
-          <select
-            name="registration"
-            defaultValue={registrationOpen ? "open" : ""}
-          >
-            <option value="">Any registration status</option>
-            <option value="open">Known deadline still open</option>
-          </select>
-        </label>
-        <Button type="submit">Apply filter</Button>
-        {(search ||
-          category ||
-          format ||
-          location ||
-          from ||
-          to ||
-          registrationOpen ||
-          latestFirst) && (
-          <Link
-            className="underlined"
-            href={upcomingOnly ? "/events?upcoming=1" : "/events"}
-          >
-            Clear filters
-          </Link>
-        )}
+        <div className="filter-top">
+          <label className="event-search" htmlFor="q">
+            Search by title
+            <span className="input-with-icon">
+              <Search size={18} aria-hidden="true" />
+              <input
+                id="q"
+                name="q"
+                type="search"
+                maxLength={searchLimit}
+                placeholder="Search an event..."
+                defaultValue={search}
+              />
+            </span>
+          </label>
+          <label htmlFor="category">
+            Category
+            <select id="category" name="category" defaultValue={category ?? ""}>
+              <option value="">All categories</option>
+              {Object.entries(categories).map(([value, name]) => (
+                <option key={value} value={value}>{name}</option>
+              ))}
+            </select>
+          </label>
+          <label htmlFor="format">
+            Format
+            <select id="format" name="format" defaultValue={format ?? ""}>
+              <option value="">Any format</option>
+              {Object.entries(formats).map(([value, label]) => (
+                <option key={value} value={value}>{label}</option>
+              ))}
+            </select>
+          </label>
+          <label htmlFor="sort">
+            Sort by start date
+            <select id="sort" name="sort" defaultValue={latestFirst ? "latest" : ""}>
+              <option value="">Earliest first</option>
+              <option value="latest">Latest first</option>
+            </select>
+          </label>
+        </div>
+        <div className="filter-bottom">
+          <label>
+            City or venue
+            <input
+              name="location"
+              type="search"
+              maxLength={searchLimit}
+              placeholder="e.g. Algiers"
+              defaultValue={location}
+            />
+          </label>
+          <label>
+            Registration
+            <select name="registration" defaultValue={registrationOpen ? "open" : ""}>
+              <option value="">Any status</option>
+              <option value="open">Known deadline still open</option>
+            </select>
+          </label>
+          <details className="date-filters" open={!!(from || to)}>
+            <summary><SlidersHorizontal size={16} aria-hidden="true" /> Date range <ChevronDown size={15} aria-hidden="true" /></summary>
+            <div className="date-filter-inputs">
+              <label>
+                From date
+                <input name="from" type="date" defaultValue={from && typeof params.from === "string" ? params.from : ""} />
+              </label>
+              <label>
+                Through date
+                <input name="to" type="date" defaultValue={to && typeof params.to === "string" ? params.to : ""} />
+              </label>
+            </div>
+          </details>
+          <Button type="submit">Apply filter <ArrowRight size={16} aria-hidden="true" /></Button>
+          {hasFilters && (
+            <Link className="clear-filters" href={upcomingOnly ? "/events?upcoming=1" : "/events"}>Clear filters</Link>
+          )}
+        </div>
       </form>
+      <div className="results-heading">
+        <div>
+          <h2>Browse events</h2>
+          <p>{!result ? "Check your selected dates." : !result.ok ? "Could not load the directory." : `Showing ${result.events.length} event${result.events.length === 1 ? "" : "s"} on this page`}</p>
+        </div>
+        <span className="results-verified"><CalendarDays size={16} aria-hidden="true" /> Published listings</span>
+      </div>
       {!result ? (
-        <p className="notice" role="alert">
-          The end date must be on or after the start date.
-        </p>
+        <div className="empty-state" role="alert">
+          <CalendarDays size={28} aria-hidden="true" />
+          <h3>Check your dates</h3>
+          <p>The end date must be on or after the start date.</p>
+        </div>
       ) : !result.ok ? (
-        <p role="status" className="notice">
-          Events are temporarily unavailable.
-        </p>
+        <div className="empty-state" role="status">
+          <Compass size={28} aria-hidden="true" />
+          <h3>Events are temporarily unavailable</h3>
+          <p>We couldn&apos;t load the directory right now. Please try again later.</p>
+        </div>
       ) : (
         <>
           {result.events.length === 0 ? (
-            <p className="notice" role="status">
-              {search ||
-              category ||
-              format ||
-              location ||
-              from ||
-              to ||
-              registrationOpen
-                ? "No published events match these filters."
-                : "No published events on this page."}
-            </p>
+            <div className="empty-state" role="status">
+              <Search size={28} aria-hidden="true" />
+              <h3>No events found</h3>
+              <p>{hasFilters ? "No published events match these filters." : "No published events on this page."}</p>
+              {hasFilters && <Link href="/events" className="empty-action">Browse all events <ArrowRight size={16} aria-hidden="true" /></Link>}
+            </div>
           ) : (
             <div className="event-grid">
-              {result.events.map((event) => (
-                <Link
-                  className="event-card"
-                  key={event.id}
-                  href={`/events/${event.slug}`}
-                >
-                  <span className="meta">
-                    {sourceStatus(event.source_status)}
-                  </span>
-                  <strong>{event.title}</strong>
-                  <time className="meta" dateTime={event.starts_at}>
-                    {eventDate(event.starts_at)}
-                  </time>
-                  <span>
-                    {event.location ??
-                      (isFormat(event.format)
-                        ? formats[event.format]
-                        : event.format)}
-                  </span>
-                </Link>
-              ))}
+              {result.events.map((event) => {
+                const date = dateParts(event.starts_at);
+                return (
+                  <Link className="event-card" key={event.id} href={`/events/${event.slug}`}>
+                    <div className="event-card-top">
+                      <span className="event-category">{categories[event.category as keyof typeof categories] ?? "Tech event"}</span>
+                      <ArrowUpRight className="event-card-open" size={20} aria-hidden="true" />
+                    </div>
+                    <div className="event-card-main">
+                      <time className="event-date-chip" dateTime={event.starts_at}>
+                        <strong>{date.day}</strong><span>{date.month}</span>
+                      </time>
+                      <div>
+                        <strong className="event-title">{event.title}</strong>
+                        <p className="event-organizer">{event.organizer}</p>
+                      </div>
+                    </div>
+                    <div className="event-card-bottom">
+                      <span><MapPin size={15} aria-hidden="true" /> {event.location ?? (isFormat(event.format) ? formats[event.format] : event.format)}</span>
+                      <time dateTime={event.starts_at}>{eventDate(event.starts_at)}</time>
+                    </div>
+                    <span className="event-source">{sourceStatus(event.source_status)}</span>
+                  </Link>
+                );
+              })}
             </div>
           )}
           {(page > 1 || result.hasNext) && (
             <nav className="pagination" aria-label="Event pages">
-              {page > 1 && <Link href={pageHref(page - 1)}>Previous</Link>}
-              {result.hasNext && <Link href={pageHref(page + 1)}>Next</Link>}
+              {page > 1 && <Link href={pageHref(page - 1)}>← Previous</Link>}
+              <span>Page {page}</span>
+              {result.hasNext && <Link href={pageHref(page + 1)}>Next <ArrowRight size={16} aria-hidden="true" /></Link>}
             </nav>
           )}
         </>
