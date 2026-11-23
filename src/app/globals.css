@@ -1009,3 +1009,16 @@ a.event-card:hover { transform: translateY(-4px); border-color: #a893f0; box-sha
 @media (prefers-reduced-motion: reduce) {
   .event-artwork img, a.event-card, a.featured-card { transition: none; transform: none !important; }
 }
+
+
+/* Event creator poster upload */
+.event-cover-input { display: grid; gap: .8rem; padding: 1.25rem; border: 1px dashed #ad9add; border-radius: 1rem; background: #faf8ff; }
+.event-cover-input label { display: grid; gap: .4rem; cursor: pointer; color: #28223d; }
+.cover-input-heading { display: inline-flex; align-items: center; gap: .55rem; font-weight: 800; font-size: .97rem; }
+.cover-input-heading svg { color: #7851da; }
+.cover-input-help { display: inline-flex; align-items: flex-start; gap: .4rem; color: #6c6880; font-size: .81rem; line-height: 1.5; }
+.event-cover-input input[type="file"] { width: 100%; max-width: 100%; padding: .8rem; border-radius: .7rem; border: 1px solid #dbd2f3; background: #fff; color: #504863; font-size: .86rem; }
+.event-cover-input input[type="file"]::file-selector-button { border: none; background: #ece7ff; color: #5130c5; border-radius: .5rem; padding: .6rem .85rem; margin-right: .7rem; font-weight: 700; cursor: pointer; }
+.cover-input-error { color: #ae2348; font-weight: 650; font-size: .85rem; }
+.event-cover-preview { width: min(100%,26rem); overflow: hidden; border-radius: .9rem; border: 1px solid #e5def5; background: #292244; }
+.event-cover-preview img { display: block; width: 100%; max-height: 20rem; object-fit: cover; }
