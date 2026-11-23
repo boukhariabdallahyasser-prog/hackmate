@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowUpRight, CalendarDays, Compass, MapPin, Search, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EventArtwork } from "@/components/event-artwork";
 import { uuid } from "@/lib/forms";
 import { algeriaDateStart } from "@/lib/event-calendar";
 import {
@@ -258,6 +259,7 @@ export default async function EventsPage({
                   key={event.id}
                   href={`/events/${event.slug}`}
                 >
+                  <EventArtwork title={event.title} slug={event.slug} cover={event.cover_path} className="listing-poster" />
                   <span className="event-card-head"><span className="event-source">{sourceStatus(event.source_status)}</span><ArrowUpRight size={19} aria-hidden="true" /></span>
                   <span className="event-type">{categories[event.category as keyof typeof categories] ?? "Tech event"}</span>
                   <strong>{event.title}</strong>
