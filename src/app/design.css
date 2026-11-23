@@ -333,7 +333,7 @@ p { line-height: 1.65; }
 .event-card-main { display: grid; grid-template-columns: auto minmax(0,1fr); gap: .9rem; margin-bottom: 1.4rem; }
 .event-date-chip { width: 54px; height: 62px; display: grid; justify-items: center; align-content: center;
   background: #f3f4ff; color: var(--primary); border-radius: 13px; flex-shrink: 0; }
-.event-date-chip strong { font-size: 1.55rem; line-height: 1; letter-spacing: -.07em; }
+.event-date-chip .event-date-day { font-size: 1.55rem; line-height: 1; letter-spacing: -.07em; font-weight: 840; }
 .event-date-chip span { text-transform: uppercase; font-size: .65rem; font-weight: 800; }
 .event-card strong.event-title { display: block; font-size: 1.12rem; font-weight: 800;
   color: #252947; line-height: 1.4; letter-spacing: -.035em; }
