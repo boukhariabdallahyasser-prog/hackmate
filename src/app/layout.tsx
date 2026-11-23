@@ -12,19 +12,13 @@ export const metadata: Metadata = {
     template: "%s | HackMate",
   },
   description: "Discover hackathons, competitions and student tech events across Algeria. Find your team, join the challenge, build something real.",
-  openGraph: {
-    title: "HackMate | Where the next thing begins",
-    description: "The home for ambitious Algerian student builders. Discover events, meet teammates, build what matters.",
-    siteName: "HackMate",
-    type: "website",
-  },
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <body>
         <a className="skip-link" href="#main">Skip to content</a>
         <SiteHeader />
