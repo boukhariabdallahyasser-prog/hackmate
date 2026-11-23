@@ -5,7 +5,7 @@ test("a visitor can open an event category from the landing page", async ({
 }) => {
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: /find your next hackathon/i }),
+    page.getByRole("heading", { name: /make your next big thing happen/i }),
   ).toBeVisible();
   await page.getByRole("link", { name: "Workshops" }).click();
   await expect(page).toHaveURL(/\/events\?category=workshop$/);
@@ -75,7 +75,7 @@ test("account navigation protects private pages and exposes registration and rec
   page,
 }) => {
   await page.goto("/");
-  await page.getByRole("link", { name: "Account", exact: true }).click();
+  await page.getByRole("link", { name: "My space", exact: true }).click();
   await expect(page).toHaveURL(/\/auth\/sign-in$/);
   await expect(
     page.getByRole("heading", { name: "Sign in to HackMate" }),
@@ -94,24 +94,62 @@ test("account navigation protects private pages and exposes registration and rec
   await expect(page).toHaveURL(/\/auth\/sign-in$/);
 });
 
-test("the home agenda opens published future events and excludes past events", async ({
+test("the home highlights published future events and excludes past events", async ({
   page,
 }) => {
   await page.goto("/");
-  const agenda = page.getByRole("region", { name: "Coming up" });
-  await expect(
-    agenda.getByRole("link", { name: /Fixture Hackathon/ }).first(),
-  ).toBeVisible();
-  await expect(agenda.getByText("Past Event")).toHaveCount(0);
-  await expect(agenda.getByText("Pending Fixture")).toHaveCount(0);
-  await agenda.getByRole("link", { name: "View the calendar" }).click();
+  await expect(page.getByRole("heading", { name: /make your next big thing happen/i })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Fixture Hackathon/i }).first()).toBeVisible();
+  await expect(page.getByText("Past Event")).toHaveCount(0);
+  await expect(page.getByText("Pending Fixture")).toHaveCount(0);
+
+  await page.getByRole("link", { name: "View upcoming events" }).click();
   await expect(page).toHaveURL(/\/events\?upcoming=1$/);
-  await expect(
-    page.getByRole("heading", { name: "Upcoming events" }),
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Upcoming events" })).toBeVisible();
   await expect(page.getByText("Past Event")).toHaveCount(0);
   await page.getByRole("link", { name: "Browse all dates" }).click();
   await expect(page.getByText("Past Event")).toBeVisible();
+});
+
+test("the global command palette searches events and closes with Escape", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.keyboard.press("Control+k");
+  const dialog = page.getByRole("dialog", { name: "Search HackMate" });
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
+
+  await page.keyboard.press("/");
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole("searchbox", { name: "Search events" }).fill("fixture");
+  await dialog.getByRole("searchbox", { name: "Search events" }).press("Enter");
+  await expect(page).toHaveURL(/[?&]q=fixture(?:&|$)/);
+});
+
+test("the mobile menu works without horizontal overflow", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await page.getByRole("button", { name: "Open navigation" }).click();
+  const menu = page.getByRole("navigation", { name: "Mobile navigation" });
+  await expect(menu).toBeVisible();
+  await menu.getByRole("link", { name: /Explore/ }).first().click();
+  await expect(page).toHaveURL(/\/events$/);
+  await expect(page.getByRole("button", { name: "Open navigation" })).toHaveAttribute("aria-expanded", "false");
+  const sizes = await page.evaluate(() => ({
+    scroll: document.documentElement.scrollWidth,
+    client: document.documentElement.clientWidth,
+  }));
+  expect(sizes.scroll).toBeLessThanOrEqual(sizes.client);
+});
+
+test("continuous motion respects the reduced-motion preference", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  await expect(page.locator(".v3-ticker-track")).toHaveCSS("animation-name", "none");
 });
 
 test("published events support venue and registration filters and calendar export", async ({
