@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowUpRight, CalendarDays, Compass, MapPin, Search, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { uuid } from "@/lib/forms";
 import { algeriaDateStart } from "@/lib/event-calendar";
 import {
   categories,
@@ -10,6 +11,7 @@ import {
   isCategory,
   isFormat,
   listEvents,
+  listEventUniversities,
   searchLimit,
   sourceStatus,
 } from "@/lib/events";
@@ -27,6 +29,7 @@ export default async function EventsPage({
     sort?: string | string[];
     upcoming?: string | string[];
     location?: string | string[];
+    university?: string | string[];
     from?: string | string[];
     to?: string | string[];
     registration?: string | string[];
@@ -42,6 +45,11 @@ export default async function EventsPage({
     typeof params.location === "string"
       ? params.location.trim().slice(0, searchLimit)
       : "";
+  const universityId =
+    typeof params.university === "string" && uuid.safeParse(params.university).success
+      ? params.university
+      : undefined;
+  const universities = await listEventUniversities();
   const from = algeriaDateStart(params.from);
   const to = algeriaDateStart(params.to);
   const dateError = from && to && from > to;
@@ -61,11 +69,20 @@ export default async function EventsPage({
         latestFirst,
         upcomingOnly,
         location,
+        universityId,
         openRegistration: registrationOpen,
         from,
         until: to ? new Date(to.getTime() + 86_400_000) : null,
         page,
       });
+
+  // Server-driven filters use uncontrolled form inputs. Remount them when
+  // navigation changes the query, otherwise cleared fields stay visually stale.
+  const formKey = [
+    category ?? "", format ?? "", search, location, universityId ?? "",
+    from?.toISOString() ?? "", to?.toISOString() ?? "",
+    String(registrationOpen), String(upcomingOnly), String(latestFirst),
+  ].join("|");
 
   function pageHref(target: number, upcoming = upcomingOnly) {
     const query = new URLSearchParams();
@@ -74,6 +91,7 @@ export default async function EventsPage({
     if (format) query.set("format", format);
     if (search) query.set("q", search);
     if (location) query.set("location", location);
+    if (universityId) query.set("university", universityId);
     if (from && typeof params.from === "string") query.set("from", params.from);
     if (to && typeof params.to === "string") query.set("to", params.to);
     if (registrationOpen) query.set("registration", "open");
@@ -97,7 +115,7 @@ export default async function EventsPage({
         <Link className={category === "coding" ? "is-active" : ""} href="/events?category=coding">Coding</Link>
       </nav>
       <div className="filter-heading"><span><SlidersHorizontal size={18} aria-hidden="true" /> Refine your search</span><Link className="underlined" href={pageHref(1, !upcomingOnly)}>{upcomingOnly ? "Browse all dates" : "Show upcoming only"}</Link></div>
-      <form className="filter" action="/events">
+      <form key={formKey} className="filter" action="/events">
         {upcomingOnly && <input name="upcoming" type="hidden" value="1" />}
         <label className="event-search" htmlFor="q">
           Search by title
@@ -152,6 +170,17 @@ export default async function EventsPage({
           />
         </label>
         <label>
+          University
+          <select name="university" defaultValue={universityId ?? ""}>
+            <option value="">All universities</option>
+            {universities.map((university) => (
+              <option value={university.id} key={university.id}>
+                {university.name}{university.city ? ` · ${university.city}` : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
           From date
           <input
             name="from"
@@ -184,6 +213,7 @@ export default async function EventsPage({
           category ||
           format ||
           location ||
+          universityId ||
           from ||
           to ||
           registrationOpen ||
@@ -213,6 +243,7 @@ export default async function EventsPage({
               category ||
               format ||
               location ||
+              universityId ||
               from ||
               to ||
               registrationOpen

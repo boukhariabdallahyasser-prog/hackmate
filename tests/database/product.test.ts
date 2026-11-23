@@ -396,6 +396,60 @@ describe("HackMate database access and workflows", () => {
       { status: "closed" },
     ]);
   });
+  test("saved-event notes and attendance are private, bounded and owner-editable", async () => {
+    const event = (
+      await db.query<{ id: string }>("select id from public.events")
+    ).rows[0].id;
+    await as(
+      "authenticated",
+      teammate,
+      "insert into public.event_bookmarks(event_id) values($1)",
+      [event],
+    );
+    const updated = await as(
+      "authenticated",
+      teammate,
+      "update public.event_bookmarks set attendance_plan='registered',personal_note='Prepare demo and team' where event_id=$1 returning attendance_plan,personal_note",
+      [event],
+    );
+    expect(updated.rows).toEqual([
+      { attendance_plan: "registered", personal_note: "Prepare demo and team" },
+    ]);
+    expect(
+      (
+        await as(
+          "authenticated",
+          spare,
+          "select personal_note from public.event_bookmarks where user_id=$1",
+          [teammate],
+        )
+      ).rows,
+    ).toEqual([]);
+    const otherUserUpdate = await as(
+      "authenticated",
+      spare,
+      "update public.event_bookmarks set attendance_plan='planning' where user_id=$1 returning event_id",
+      [teammate],
+    );
+    expect(otherUserUpdate.rows).toEqual([]);
+    await expect(
+      as(
+        "authenticated",
+        teammate,
+        "update public.event_bookmarks set personal_note=$1 where event_id=$2",
+        ["x".repeat(601), event],
+      ),
+    ).rejects.toThrow();
+    await expect(
+      as(
+        "authenticated",
+        teammate,
+        "update public.event_bookmarks set user_id=$1 where event_id=$2",
+        [spare, event],
+      ),
+    ).rejects.toThrow("permission denied");
+  });
+
   test("invited students can see private teams and moderation prevents reopening", async () => {
     const event = (
       await db.query<{ id: string }>("select id from public.events")

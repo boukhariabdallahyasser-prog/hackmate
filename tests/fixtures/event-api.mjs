@@ -7,11 +7,20 @@ function fromToday(days) {
   ).toISOString();
 }
 
+const ensiaId = "00000000-0000-4000-8000-000000000100";
+const oranId = "00000000-0000-4000-8000-000000000200";
+
+const universities = [
+  { id: ensiaId, name: "National School of Artificial Intelligence", city: "Algiers", active: true },
+  { id: oranId, name: "Oran Tech University", city: "Oran", active: true },
+];
+
 const events = [
   {
     id: "00000000-0000-0000-0000-000000000001",
     slug: "fixture-hackathon",
     title: "Fixture Hackathon",
+    university_id: ensiaId,
     category: "hackathon",
     description:
       "This event is only present in the automated test environment.",
@@ -50,6 +59,7 @@ events.push(
     id: "00000000-0000-0000-0000-000000000004",
     slug: "fixture-hackathon-offline",
     title: "Fixture Hackathon: In Person",
+    university_id: oranId,
     format: "offline",
     location: "Oran",
     registration_deadline: null,
@@ -68,12 +78,17 @@ events.push(
 createServer((request, response) => {
   const url = new URL(request.url ?? "/", "http://127.0.0.1:3101");
   if (url.pathname === "/health") return response.end("ready");
+  if (url.pathname === "/rest/v1/universities" && request.method === "GET") {
+    response.writeHead(200, { "Content-Type": "application/json" });
+    response.end(JSON.stringify(universities));
+    return;
+  }
   if (url.pathname !== "/rest/v1/events" || request.method !== "GET") {
     response.writeHead(404).end();
     return;
   }
 
-  const filters = ["category", "slug", "moderation_status", "format"];
+  const filters = ["category", "slug", "moderation_status", "format", "university_id"];
   const title = url.searchParams.get("title");
   const titlePattern = title?.startsWith("imatch.")
     ? new RegExp(title.slice(7), "i")
