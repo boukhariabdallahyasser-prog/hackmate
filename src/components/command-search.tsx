@@ -59,9 +59,10 @@ export function CommandSearch({ compact = false }: { compact?: boolean }) {
             <div className="command-dialog-top">
               <Search size={22} aria-hidden="true" />
               <h2 id="command-heading" className="sr-only">Search HackMate</h2>
-              <form className="command-form" action="/events" method="get" onSubmit={() => setOpen(false)}>
+              <form className="command-form" action="/events" method="get">
                 <input ref={inputRef} type="search" name="q" placeholder="Search events, hackathons, keywords..." aria-label="Search events"
                   maxLength={100} autoComplete="off" />
+                <button className="command-search-submit" type="submit" aria-label="Run event search"><ArrowRight size={17} aria-hidden="true" /></button>
               </form>
               <button className="command-close" type="button" onClick={() => setOpen(false)} aria-label="Close search"><X size={19} /></button>
             </div>
