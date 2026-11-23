@@ -29,7 +29,6 @@ export function MobileMenu({
               {label}
             </Link>
           ))}
-          <Link href="/account" onClick={() => setOpen(false)}>Account</Link>
           <Link
             className="mobile-join"
             href="/auth/register"
