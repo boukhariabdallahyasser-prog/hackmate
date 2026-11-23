@@ -78,3 +78,56 @@ The connected Supabase project `fqydthbluwwczwaytifz` has the ENSIA domain
 working email confirmation delivery, and staff approval before accessing
 verified-member features. An initial confirmed super-admin account must be
 bootstrapped through the documented privileged procedure.
+
+
+## Cloudflare/Server Actions Supabase connection (fixed in the runtime-binding release)
+
+If registration returns:
+
+> Registration cannot connect to Supabase on this deployment.
+
+this happens **before** a Supabase signup request is sent. It means
+`serverClient()` does not have a complete URL + publishable API key
+inside the server runtime. It does *not* mean that the Supabase
+database or authentication service is down.
+
+HackMate uses vinext. Build-time `NEXT_PUBLIC_*` variables are not by
+themselves guaranteed to be available inside Cloudflare's workerd. The
+repository's `cloudflare.config.ts` now declares these **public** text
+bindings for the deployed Worker:
+
+- `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`, used by server auth;
+- `APP_PUBLIC_SITE_URL`, used for email-confirmation and recovery redirects;
+- the `NEXT_PUBLIC_*` equivalents for backward compatibility.
+
+No Supabase secret, service-role key, database password, or admin token is
+ever included. The public binding values come from the CI environment when
+present, with defaults for this repository's *production Worker*. In preview
+or staging mode (`CLOUDFLARE_ENV=preview|staging|development`), public
+project settings must be provided explicitly rather than silently sharing
+production student data.
+
+**After a successful Worker deployment** check
+`https://hackmate.yazerabdo01.workers.dev/api/health`:
+
+- `200` with `{"status":"ready","service":"supabase","registrationEligibility":"reachable"}`
+  means Worker server code can authenticate a read-only request to the
+  registration-eligibility API.
+- `503` with `configuration_missing` indicates absent Worker settings.
+- `503` with `database_request_failed` or `network_or_runtime_error`
+  indicates Supabase request failure; inspect Worker logs and project health.
+
+The health route never returns API keys, user records or internal stack
+traces. CI also starts the **built Cloudflare Worker** with `vite preview`
+and checks this route before attempting a production deployment.
+
+This health check confirms the infrastructure connection, **not** end-to-end
+signup email delivery, allowed redirect URLs, first admin setup or user
+approval. Test those separately with an eligible university email.
+
+A successful workflow with build and test steps is not a release unless
+the **Deploy to Cloudflare** step also succeeds. The GitHub Actions secret
+`CLOUDFLARE_API_TOKEN` must still be configured in the repository. When
+deploying through Cloudflare's dashboard integration instead of GitHub
+Actions, ensure the connected Worker uses the `cloudflare.config.ts`
+bindings and the same source commit.
