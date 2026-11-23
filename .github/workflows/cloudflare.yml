@@ -58,7 +58,7 @@ jobs:
             test ! -f "$RUNNER_TEMP/health.json" || cat "$RUNNER_TEMP/health.json"
             exit 1
           fi
-          node -e 'const fs=require("node:fs");const result=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/health.json","utf8"));if(result.status!=="ready"||result.registrationEligibility!=="reachable"){process.exit(1)}}'
+          node -e 'const fs=require("node:fs");const result=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/health.json","utf8"));if(result.status!=="ready"||result.registrationEligibility!=="reachable"){process.exit(1)}'
       - name: Deploy to Cloudflare
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         env:
