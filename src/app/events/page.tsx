@@ -178,6 +178,17 @@ export default async function EventsPage({
             </select>
           </label>
         </div>
+        <input
+          id="show-advanced-filters"
+          type="checkbox"
+          className="filter-options-checkbox"
+          defaultChecked={!!(format || latestFirst || location || registrationOpen || from || to)}
+        />
+        <label htmlFor="show-advanced-filters" className="filter-options-toggle">
+          <SlidersHorizontal size={17} aria-hidden="true" />
+          More filters
+          <ChevronDown size={16} aria-hidden="true" />
+        </label>
         <div className="filter-bottom">
           <label>
             City or venue
