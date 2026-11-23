@@ -48,7 +48,11 @@ export async function register(
       message: "Use a university email and a password of 10–128 characters.",
     };
   const client = await serverClient();
-  if (!client) return { message: "Registration is temporarily unavailable." };
+  if (!client)
+    return {
+      message:
+        "Registration cannot connect to Supabase on this deployment. Please contact the site administrator.",
+    };
   const { data: domain, error: lookupError } = await client
     .from("university_email_domains")
     .select("id")
