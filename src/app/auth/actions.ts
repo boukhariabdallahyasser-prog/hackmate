@@ -26,7 +26,11 @@ export async function signIn(_: FormState, form: FormData): Promise<FormState> {
   )
     return { message: "Enter your university email and password." };
   const client = await serverClient();
-  if (!client) return { message: "Sign-in is temporarily unavailable." };
+  if (!client)
+    return {
+      message:
+        "Sign-in is unavailable because the server cannot initialize Supabase. Please contact the site administrator.",
+    };
   const { error } = await client.auth.signInWithPassword({
     email: address.data,
     password: secret,
