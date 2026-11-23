@@ -5,6 +5,7 @@ import {
   Bolt,
   CalendarDays,
   UsersRound,
+  UserRound,
 } from "lucide-react";
 import { MobileMenu } from "@/components/mobile-menu";
 import "./globals.css";
@@ -61,6 +62,7 @@ export default function RootLayout({
                 Join HackMate <ArrowUpRight size={17} aria-hidden="true" />
               </Link>
             </div>
+            <Link href="/account" className="mobile-account-link" aria-label="Account"><UserRound size={20} aria-hidden="true" /></Link>
             <MobileMenu links={links} />
           </div>
         </header>
