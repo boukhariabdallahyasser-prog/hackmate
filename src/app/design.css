@@ -858,3 +858,24 @@ dl.event-grid dd { font-size: 2rem; font-weight: 840; letter-spacing: -.06em; co
 @media (max-width: 610px) {
   .about-trust { grid-template-columns: 1fr; }
 }
+
+
+/* Staff navigation and review queues */
+.staff-page { gap: 1.5rem; }
+.staff-intro { color: white; padding: clamp(1.75rem,3.5vw,3rem);
+  background: #191b3e; border-radius: 23px; }
+.staff-intro .section-overline { color: #bab5ff; }
+.staff-intro h1 { color: white; margin: .7rem 0 .55rem; }
+.staff-intro > p:last-child { color: #c1c7df; max-width: 650px; }
+.staff-quicknav { display: flex; flex-wrap: wrap; gap: .55rem; }
+.staff-quicknav a { padding: .7rem .95rem; border: 1px solid #dbdef0;
+  border-radius: 999px; color: #535c76; background: #fff;
+  font-weight: 750; font-size: .82rem; }
+.staff-quicknav a:hover { border-color: #a49cff; color: var(--primary); }
+.staff-section { scroll-margin-top: 110px; }
+.staff-section > h2 { font-size: 1.65rem; margin-bottom: .3rem; }
+.staff-stats { margin: .2rem 0; }
+.staff-stats .notice { min-height: 116px; }
+.staff-stats dt { font-weight: 740; }
+.staff-stats dd { margin: .5rem 0 0; }
+.staff-page details.notice { scroll-margin-top: 110px; }
