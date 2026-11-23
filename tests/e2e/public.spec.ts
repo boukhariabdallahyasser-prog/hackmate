@@ -142,9 +142,11 @@ test("published events support venue and registration filters and calendar expor
 test("mobile navigation exposes the same main destinations", async ({ page }, testInfo) => {
   await page.goto("/");
   if (testInfo.project.name === "mobile") {
-    await page.locator(".mobile-menu summary").click();
+    await page.getByRole("button", { name: "Open navigation menu" }).click();
     await expect(page.getByRole("navigation", { name: "Mobile navigation" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Find teammates" })).toBeVisible();
+    await page.getByRole("link", { name: "Find teammates" }).click();
+    await expect(page.getByRole("navigation", { name: "Mobile navigation" })).toHaveCount(0);
   } else {
     await expect(page.getByRole("navigation", { name: "Main" })).toBeVisible();
   }
