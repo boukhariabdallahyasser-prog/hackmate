@@ -76,6 +76,14 @@ export default async function EventsPage({
         page,
       });
 
+  // Server-driven filters use uncontrolled form inputs. Remount them when
+  // navigation changes the query, otherwise cleared fields stay visually stale.
+  const formKey = [
+    category ?? "", format ?? "", search, location, universityId ?? "",
+    from?.toISOString() ?? "", to?.toISOString() ?? "",
+    String(registrationOpen), String(upcomingOnly), String(latestFirst),
+  ].join("|");
+
   function pageHref(target: number, upcoming = upcomingOnly) {
     const query = new URLSearchParams();
     if (target > 1) query.set("page", String(target));
@@ -107,7 +115,7 @@ export default async function EventsPage({
         <Link className={category === "coding" ? "is-active" : ""} href="/events?category=coding">Coding</Link>
       </nav>
       <div className="filter-heading"><span><SlidersHorizontal size={18} aria-hidden="true" /> Refine your search</span><Link className="underlined" href={pageHref(1, !upcomingOnly)}>{upcomingOnly ? "Browse all dates" : "Show upcoming only"}</Link></div>
-      <form className="filter" action="/events">
+      <form key={formKey} className="filter" action="/events">
         {upcomingOnly && <input name="upcoming" type="hidden" value="1" />}
         <label className="event-search" htmlFor="q">
           Search by title
