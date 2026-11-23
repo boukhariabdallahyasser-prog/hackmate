@@ -16,7 +16,8 @@ function approvedCover(value: string | null | undefined): string | null {
   return url.protocol === "https:" && !url.username && !url.password ? url.href : null;
 }
 
-export function EventArtwork({ title, slug, cover, className = "", priority = false }: Props) {
+export function EventArtwork({ title: _title, slug, cover, className = "", priority = false }: Props) {
+  void _title;
   const [failed, setFailed] = useState(false);
   const submittedCover = approvedCover(cover);
   const fallback = `/events/${slug}/poster`;
@@ -27,7 +28,7 @@ export function EventArtwork({ title, slug, cover, className = "", priority = fa
       {/* eslint-disable-next-line @next/next/no-img-element -- Approved external cover URLs and generated local SVG posters are intentionally unoptimized. */}
       <img
         src={src}
-        alt={submittedCover && !failed ? `Official artwork submitted for ${title}` : `Illustrated poster for ${title}`}
+        alt=""
         loading={priority ? "eager" : "lazy"}
         fetchPriority={priority ? "high" : undefined}
         referrerPolicy="no-referrer"
@@ -36,7 +37,7 @@ export function EventArtwork({ title, slug, cover, className = "", priority = fa
           if (!failed) setFailed(true);
         }}
       />
-      <span className="event-artwork-flag">{submittedCover && !failed ? "Event cover" : "HackMate artwork"}</span>
+      <span aria-hidden="true" className="event-artwork-flag">{submittedCover && !failed ? "Event cover" : "HackMate artwork"}</span>
     </div>
   );
 }
