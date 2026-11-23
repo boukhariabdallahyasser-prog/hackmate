@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { serverClient } from "@/lib/supabase/server";
+import { siteOrigin } from "@/lib/site-url";
 
 export async function GET(request: NextRequest) {
   const client = await serverClient();
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
           : "/account";
   }
   return NextResponse.redirect(
-    new URL(path, process.env.NEXT_PUBLIC_SITE_URL || request.nextUrl.origin),
+    new URL(path, siteOrigin()),
     {
       headers: {
         "Cache-Control": "private, no-store",
