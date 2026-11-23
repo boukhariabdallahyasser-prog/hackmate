@@ -12,6 +12,27 @@ import {
 } from "@/lib/forms";
 import { requireMember } from "@/lib/supabase/server";
 
+const coverFormats = {
+  "image/png": "png",
+  "image/jpeg": "jpg",
+  "image/webp": "webp",
+} as const;
+
+async function verifiedImageFormat(file: File) {
+  if (!(file.type in coverFormats) || file.size > 3 * 1024 * 1024 || file.size < 12)
+    return null;
+  const bytes = new Uint8Array(await file.slice(0, 16).arrayBuffer());
+  const png = [137, 80, 78, 71, 13, 10, 26, 10].every((value, index) => bytes[index] === value);
+  const jpeg = bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255;
+  const webp = String.fromCharCode(...bytes.slice(0, 4)) === "RIFF" &&
+    String.fromCharCode(...bytes.slice(8, 12)) === "WEBP";
+  if ((file.type === "image/png" && png) ||
+      (file.type === "image/jpeg" && jpeg) ||
+      (file.type === "image/webp" && webp))
+    return coverFormats[file.type as keyof typeof coverFormats];
+  return null;
+}
+
 function localDate(value: string | null) {
   if (!value || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) return null;
   const date = new Date(`${value}:00+01:00`);
@@ -24,7 +45,7 @@ export async function submitEvent(
   _: FormState,
   form: FormData,
 ): Promise<FormState> {
-  const { client } = await requireMember("verified");
+  const { client, id } = await requireMember("verified");
   const title = textField(form, "title");
   const description = textField(form, "description");
   const organizer = textField(form, "organizer");
@@ -107,6 +128,12 @@ export async function submitEvent(
       message: "Shorten the location, eligibility or prize information.",
     };
 
+  const coverFile = form.get("cover_image");
+  const image = coverFile instanceof File && coverFile.size > 0 ? coverFile : null;
+  const extension = image ? await verifiedImageFormat(image) : null;
+  if (image && !extension)
+    return { message: "Upload a real PNG, JPEG or WebP image of at most 3 MB." };
+
   const titleSlug = title
     .normalize("NFKD")
     .toLowerCase()
@@ -115,6 +142,25 @@ export async function submitEvent(
     .slice(0, 120)
     .replace(/^-|-$/g, "");
   const slug = `${titleSlug || "event"}-${crypto.randomUUID().slice(0, 8)}`;
+  let uploadedPath: string | null = null;
+  if (image && extension) {
+    uploadedPath = `${id}/${crypto.randomUUID()}.${extension}`;
+    const { error: uploadError } = await client.storage
+      .from("event-covers")
+      .upload(uploadedPath, image, {
+        contentType: image.type,
+        cacheControl: "3600",
+        upsert: false,
+      });
+    if (uploadError)
+      return { message: "The event poster couldn't be uploaded. Please try again, or use an HTTPS image URL." };
+    const { data: coverUrl } = client.storage.from("event-covers").getPublicUrl(uploadedPath);
+    links.cover_path = httpsUrl(coverUrl.publicUrl);
+    if (!links.cover_path) {
+      await client.storage.from("event-covers").remove([uploadedPath]);
+      return { message: "The event poster URL couldn't be created." };
+    }
+  }
   const { error } = await client.rpc("submit_event", {
     details: {
       title,
@@ -135,11 +181,14 @@ export async function submitEvent(
     },
     skills: skills.data,
   });
-  if (error)
+  if (error) {
+    if (uploadedPath)
+      await client.storage.from("event-covers").remove([uploadedPath]);
     return {
       message:
         "The event could not be submitted. Check the details and try again.",
     };
+  }
   revalidatePath("/account/submissions");
   return {
     message: `${categories[category]} · ${formats[format]} — event submitted for staff review.`,

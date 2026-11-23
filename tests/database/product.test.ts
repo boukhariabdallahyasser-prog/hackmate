@@ -122,6 +122,52 @@ describe("HackMate database access and workflows", () => {
     ).rejects.toThrow("permission denied");
   });
 
+  test("restricts poster uploads to verified students and their own namespace", async () => {
+    const bucket = (
+      await db.query<{ public: boolean; file_size_limit: number }>(
+        "select public,file_size_limit from storage.buckets where id='event-covers'",
+      )
+    ).rows;
+    expect(bucket).toEqual([{ public: true, file_size_limit: 3145728 }]);
+
+    const file = `${teammate}/00000000-0000-4000-8000-000000000088.webp`;
+    await as(
+      "authenticated",
+      teammate,
+      "insert into storage.objects(bucket_id,name) values('event-covers',$1)",
+      [file],
+    );
+
+    await expect(
+      as(
+        "authenticated",
+        member,
+        "insert into storage.objects(bucket_id,name) values('event-covers',$1)",
+        [`${member}/00000000-0000-4000-8000-000000000077.png`],
+      ),
+    ).rejects.toThrow();
+    await expect(
+      as(
+        "authenticated",
+        teammate,
+        "insert into storage.objects(bucket_id,name) values('event-covers',$1)",
+        [`${member}/00000000-0000-4000-8000-000000000077.png`],
+      ),
+    ).rejects.toThrow();
+    await expect(
+      as(
+        "authenticated",
+        teammate,
+        "insert into storage.objects(bucket_id,name) values('event-covers',$1)",
+        [`${teammate}/00000000-0000-4000-8000-000000000077.svg`],
+      ),
+    ).rejects.toThrow();
+    expect(
+      (await as("authenticated", teammate,
+        "delete from storage.objects where name=$1 returning name", [file])).rows,
+    ).toEqual([{ name: file }]);
+  });
+
   test("reviews private verification evidence and records a notification", async () => {
     await as(
       "authenticated",

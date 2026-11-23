@@ -30,7 +30,7 @@ export function isFormat(value: unknown): value is keyof typeof formats {
 export const searchLimit = 100;
 
 const columns =
-  "id,slug,title,category,organizer,starts_at,location,format,source_status,registration_deadline,registration_url";
+  "id,slug,title,category,organizer,starts_at,location,format,source_status,registration_deadline,registration_url,cover_path";
 export const pageSize = 12;
 
 function publicClient() {
@@ -148,7 +148,7 @@ export async function getEvent(slug: string) {
   const { data, error } = await supabase
     .from("events")
     .select(
-      `${columns}, description, ends_at, official_url, source_url, eligibility, prizes, min_team_size, max_team_size, cover_path, event_skills(skill_id)`,
+      `${columns}, description, ends_at, official_url, source_url, eligibility, prizes, min_team_size, max_team_size, event_skills(skill_id)`,
     )
     .eq("moderation_status", "approved")
     .eq("slug", slug)

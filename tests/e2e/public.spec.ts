@@ -152,3 +152,17 @@ test("university filter narrows events and is preserved in the URL", async ({ pa
   await page.getByRole("link", { name: "Clear filters" }).click();
   await expect(page.getByLabel("University")).toHaveValue("");
 });
+
+test("published events always have a poster, but hidden events do not", async ({ page, request }) => {
+  await page.goto("/events?category=hackathon");
+  const cover = page.locator(".event-card .event-artwork img").first();
+  await expect(cover).toHaveAttribute("src", "/events/fixture-hackathon/poster");
+  const image = await request.get("/events/fixture-hackathon/poster");
+  expect(image.status()).toBe(200);
+  expect(image.headers()["content-type"]).toContain("image/svg+xml");
+  expect(await image.text()).toContain("Fixture Hackathon");
+
+  expect((await request.get("/events/pending-fixture/poster")).status()).toBe(404);
+  await page.goto("/events/fixture-hackathon");
+  await expect(page.locator(".detail-poster img")).toHaveCount(1);
+});
