@@ -1,4 +1,5 @@
 import { ActionForm } from "@/components/action-form";
+import { EventCoverInput } from "@/components/event-cover-input";
 import { SkillSelector } from "@/components/skill-selector";
 import { categories, formats } from "@/lib/events";
 import { requireMember } from "@/lib/supabase/server";
@@ -102,9 +103,10 @@ export default async function SubmitEventPage() {
           Official website
           <input type="url" name="official_url" maxLength={500} />
         </label>
+        <EventCoverInput />
         <label>
-          Cover image URL
-          <input type="url" name="cover_path" maxLength={500} />
+          Or paste an HTTPS image link
+          <input type="url" name="cover_path" maxLength={500} placeholder="https://organizer.example/poster.jpg" />
         </label>
         <label>
           Eligibility
