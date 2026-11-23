@@ -17,10 +17,17 @@ const palettes = [
   ["#202044", "#4783eb", "#ffa8c6"],
 ] as const;
 
+const xmlEscapes: Record<string, string> = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&apos;",
+};
+
 export function xmlText(value: string): string {
-  return value.replace(/[&<>"']/g, (char) =>
-    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" })[char]!,
-  ).replace(/[\u0000-\u001f\u007f]/g, "");
+  return value.replace(/[&<>"']/g, (char) => xmlEscapes[char] ?? char)
+    .replace(/[\u0000-\u001f\u007f]/g, "");
 }
 
 function linesForTitle(title: string): string[] {
