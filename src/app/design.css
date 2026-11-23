@@ -893,9 +893,9 @@ dl.event-grid dd { font-size: 2rem; font-weight: 840; letter-spacing: -.06em; co
 
 /* Compact mobile filtering without hiding search or category */
 .filter-options-checkbox { position: absolute; width: 1px; height: 1px; opacity: 0; }
-.filter-options-toggle { display: none; }
+.filters-panel > label.filter-options-toggle { display: none; }
 @media (max-width: 610px) {
-  .filter-options-toggle { display: flex; align-items: center; justify-content: center; gap: .55rem;
+  .filters-panel > label.filter-options-toggle { display: flex; align-items: center; justify-content: center; gap: .55rem;
     padding: .82rem 1rem; border: 1px solid #dfe4ef; border-radius: 12px;
     color: #5c6481; background: #fafbff; cursor: pointer; font-size: .86rem; font-weight: 760; }
   .filter-options-toggle > svg:last-child { margin-left: auto; }
