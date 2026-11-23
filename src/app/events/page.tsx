@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ArrowUpRight, CalendarDays, Compass, MapPin, Search, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { algeriaDateStart } from "@/lib/event-calendar";
 import {
@@ -83,11 +84,19 @@ export default async function EventsPage({
 
   return (
     <section className="shell section">
-      <h1>{upcomingOnly ? "Upcoming events" : "Explore events"}</h1>
-      <Link className="underlined" href={pageHref(1, !upcomingOnly)}>
-        {upcomingOnly ? "Browse all dates" : "Show upcoming only"}
-      </Link>
-      <p className="meta">Browse published technology events across Algeria.</p>
+      <div className="event-page-intro">
+        <span className="section-kicker">YOUR NEXT CHALLENGE AWAITS</span>
+        <h1>{upcomingOnly ? "Upcoming events" : "Explore events"}<span className="event-heading-period">.</span></h1>
+        <p>Hackathons, workshops, competitions and more. Find the right opportunity to learn, compete and connect.</p>
+      </div>
+      <nav aria-label="Quick event filters" className="event-quick-links">
+        <Link className={!upcomingOnly && !category ? "is-active" : ""} href="/events"><Compass size={16} aria-hidden="true" /> All events</Link>
+        <Link className={upcomingOnly ? "is-active" : ""} href="/events?upcoming=1"><CalendarDays size={16} aria-hidden="true" /> Upcoming</Link>
+        <Link className={category === "hackathon" ? "is-active" : ""} href="/events?category=hackathon">Hackathons</Link>
+        <Link className={category === "workshop" ? "is-active" : ""} href="/events?category=workshop">Workshops</Link>
+        <Link className={category === "coding" ? "is-active" : ""} href="/events?category=coding">Coding</Link>
+      </nav>
+      <div className="filter-heading"><span><SlidersHorizontal size={18} aria-hidden="true" /> Refine your search</span><Link className="underlined" href={pageHref(1, !upcomingOnly)}>{upcomingOnly ? "Browse all dates" : "Show upcoming only"}</Link></div>
       <form className="filter" action="/events">
         {upcomingOnly && <input name="upcoming" type="hidden" value="1" />}
         <label className="event-search" htmlFor="q">
@@ -170,7 +179,7 @@ export default async function EventsPage({
             <option value="open">Known deadline still open</option>
           </select>
         </label>
-        <Button type="submit">Apply filter</Button>
+        <Button type="submit"><Search size={17} aria-hidden="true" /> Apply filter</Button>
         {(search ||
           category ||
           format ||
@@ -197,6 +206,7 @@ export default async function EventsPage({
         </p>
       ) : (
         <>
+          <div className="results-heading"><h2>{result.events.length ? "Discover what's happening" : "Your results"}</h2><span>{result.events.length ? "Explore events matching your interests" : "Try a different search"}</span></div>
           {result.events.length === 0 ? (
             <p className="notice" role="status">
               {search ||
@@ -217,18 +227,13 @@ export default async function EventsPage({
                   key={event.id}
                   href={`/events/${event.slug}`}
                 >
-                  <span className="meta">
-                    {sourceStatus(event.source_status)}
-                  </span>
+                  <span className="event-card-head"><span className="event-source">{sourceStatus(event.source_status)}</span><ArrowUpRight size={19} aria-hidden="true" /></span>
+                  <span className="event-type">{categories[event.category as keyof typeof categories] ?? "Tech event"}</span>
                   <strong>{event.title}</strong>
-                  <time className="meta" dateTime={event.starts_at}>
-                    {eventDate(event.starts_at)}
-                  </time>
-                  <span>
-                    {event.location ??
-                      (isFormat(event.format)
-                        ? formats[event.format]
-                        : event.format)}
+                  <span className="event-card-details">
+                    <time dateTime={event.starts_at}><CalendarDays size={16} aria-hidden="true" />{eventDate(event.starts_at)}</time>
+                    <span><MapPin size={16} aria-hidden="true" />{event.location ??
+                      (isFormat(event.format) ? formats[event.format] : event.format)}</span>
                   </span>
                 </Link>
               ))}
