@@ -7,7 +7,9 @@ import { email, password, textField, type FormState } from "@/lib/forms";
 function callback(recovery = false) {
   const url = new URL(
     "/auth/confirm",
-    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000",
+    process.env.APP_PUBLIC_SITE_URL ||
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      "http://localhost:3000",
   );
   if (recovery) url.searchParams.set("flow", "recovery");
   return url.href;

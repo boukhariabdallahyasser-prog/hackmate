@@ -14,11 +14,17 @@ const productionSupabase = {
 
 export function supabaseConfig() {
   const isKnownProductionSite =
-    process.env.NEXT_PUBLIC_SITE_URL === productionSite;
+    (process.env.APP_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL) === productionSite;
+
+  // Cloudflare Worker runtime receives these server-only aliases as text
+  // bindings. NEXT_PUBLIC_* may be inlined during a vinext/Next.js build but
+  // cannot be relied on as Worker runtime environment variables.
   const url =
+    process.env.SUPABASE_URL ||
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
     (isKnownProductionSite ? productionSupabase.url : "");
   const key =
+    process.env.SUPABASE_PUBLISHABLE_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
     (isKnownProductionSite ? productionSupabase.key : "");
   return url && key ? { url, key } : null;

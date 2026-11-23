@@ -37,6 +37,28 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - run: npm run build:vinext
+      - name: Verify deployed Worker runtime can reach Supabase
+        run: |
+          set -euo pipefail
+          npm run start:vinext -- --host 127.0.0.1 --port 3197 > "$RUNNER_TEMP/hackmate-worker.log" 2>&1 &
+          worker_pid=$!
+          trap 'kill "$worker_pid" 2>/dev/null || true' EXIT
+          ready=0
+          for attempt in $(seq 1 35); do
+            status=$(curl -s -o "$RUNNER_TEMP/health.json" -w "%{http_code}" --max-time 6 "http://127.0.0.1:3197/api/health" || true)
+            if [ "$status" = "200" ]; then
+              ready=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then
+            echo "::error title=Cloudflare runtime disconnected::The Worker was built but cannot reach Supabase."
+            tail -n 120 "$RUNNER_TEMP/hackmate-worker.log" || true
+            test ! -f "$RUNNER_TEMP/health.json" || cat "$RUNNER_TEMP/health.json"
+            exit 1
+          fi
+          node -e 'const fs=require("node:fs");const result=JSON.parse(fs.readFileSync(process.env.RUNNER_TEMP+"/health.json","utf8"));if(result.status!=="ready"||result.registrationEligibility!=="reachable"){process.exit(1)}'
       - name: Deploy to Cloudflare
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         env:

@@ -6,7 +6,9 @@ import { MotionLayer } from "@/components/motion-layer";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"),
+  metadataBase: new URL(process.env.APP_PUBLIC_SITE_URL ||
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    "http://localhost:3000"),
   title: {
     default: "HackMate | Where the next thing begins",
     template: "%s | HackMate",
