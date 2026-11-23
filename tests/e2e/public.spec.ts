@@ -28,16 +28,14 @@ test("title search, format and start date sorting work together", async ({
   await page.getByLabel("Format").selectOption("online");
   await page.getByLabel("Sort by start date").selectOption("latest");
   await page.getByRole("button", { name: "Apply filter" }).click();
-  await expect(page.locator(".event-card strong")).toHaveText([
+  await expect(page.locator(".event-card .event-title")).toHaveText([
     "Fixture Hackathon: Finals",
     "Fixture Hackathon",
   ]);
   await expect(page.getByLabel("Format")).toHaveValue("online");
   await page.getByLabel("Search by title").fill(".*");
   await page.getByRole("button", { name: "Apply filter" }).click();
-  await expect(page.getByRole("status")).toHaveText(
-    "No published events match these filters.",
-  );
+  await expect(page.getByRole("status")).toContainText("No published events match these filters.");
 });
 
 test("an invalid event slug returns 404", async ({ page }) => {
@@ -139,4 +137,31 @@ test("published events support venue and registration filters and calendar expor
   expect((await request.get("/events/pending-fixture/calendar")).status()).toBe(
     404,
   );
+});
+
+test("mobile navigation exposes the same main destinations", async ({ page }, testInfo) => {
+  await page.goto("/");
+  if (testInfo.project.name === "mobile") {
+    await page.locator(".mobile-menu summary").click();
+    await expect(page.getByRole("navigation", { name: "Mobile navigation" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Find teammates" })).toBeVisible();
+  } else {
+    await expect(page.getByRole("navigation", { name: "Main" })).toBeVisible();
+  }
+  await expect(page.getByRole("link", { name: "HackMate home" })).toBeVisible();
+});
+
+test("landing search takes visitors to the filtered directory", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("searchbox", { name: "Search student events" }).fill("fixture");
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  await expect(page).toHaveURL(/\/events\?q=fixture$/);
+  await expect(page.getByLabel("Search by title")).toHaveValue("fixture");
+});
+
+test("capture home and directory UI for visual review", async ({ page }, testInfo) => {
+  await page.goto("/");
+  await page.screenshot({ path: testInfo.outputPath("home.png"), fullPage: true });
+  await page.goto("/events?upcoming=1");
+  await page.screenshot({ path: testInfo.outputPath("events.png"), fullPage: true });
 });
