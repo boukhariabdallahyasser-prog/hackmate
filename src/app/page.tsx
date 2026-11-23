@@ -4,6 +4,7 @@ import {
   MapPin, Search, ShieldCheck, Sparkles, Trophy, UsersRound, Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EventArtwork } from "@/components/event-artwork";
 import { categories, eventDate, listEvents, sourceStatus } from "@/lib/events";
 
 const categoryLinks = [
@@ -22,7 +23,8 @@ export default async function Home() {
     page: 1,
     upcomingOnly: true,
   });
-  const featured = results.ok ? results.events.slice(0, 3) : [];
+  const featured = results.ok ? results.events.slice(0, 4) : [];
+  const agenda = featured.slice(0, 3);
 
   return (
     <>
@@ -64,9 +66,10 @@ export default async function Home() {
             </header>
             {featured.length ? (
               <ul>
-                {featured.map((event) => (
+                {agenda.map((event) => (
                   <li key={event.id}>
                     <Link className="home-agenda-item" href={`/events/${event.slug}`}>
+                      <EventArtwork title={event.title} slug={event.slug} cover={event.cover_path} className="agenda-poster" />
                       <span className="agenda-date">
                         <CalendarDays size={16} aria-hidden="true" />
                         {eventDate(event.starts_at)}
@@ -132,6 +135,7 @@ export default async function Home() {
             <div className="featured-grid">
               {featured.map((event) => (
                 <Link key={event.id} className="featured-card" href={`/events/${event.slug}`}>
+                  <EventArtwork title={event.title} slug={event.slug} cover={event.cover_path} className="featured-poster" />
                   <span className="featured-card-top"><span>{sourceStatus(event.source_status)}</span><ArrowUpRight size={19} aria-hidden="true" /></span>
                   <span className="featured-card-category">{categories[event.category as keyof typeof categories] ?? "Tech event"}</span>
                   <strong>{event.title}</strong>
@@ -143,13 +147,23 @@ export default async function Home() {
               ))}
             </div>
           ) : (
-            <div className="featured-empty">
-              <span><Search size={24} aria-hidden="true" /></span>
-              <div>
-                <strong>No upcoming events published yet.</strong>
-                <p>New opportunities will appear here once they are approved.</p>
+            <div className="discover-empty">
+              <div className="featured-empty">
+                <span><Search size={24} aria-hidden="true" /></span>
+                <div>
+                  <strong>First hackathons coming soon.</strong>
+                  <p>No published events yet. Explore a track below while organizers prepare their official event posters.</p>
+                </div>
+                <Link href="/events">Explore all events <ArrowRight size={17} aria-hidden="true" /></Link>
               </div>
-              <Link href="/events">Explore all events <ArrowRight size={17} aria-hidden="true" /></Link>
+              <div className="track-preview-grid">
+                {categoryLinks.map(({ id, label, icon: Icon, className }) => (
+                  <Link href={`/events?category=${id}`} key={id} className={`track-preview ${className}`}>
+                    <span className="track-preview-art"><Icon size={48} strokeWidth={1.45} aria-hidden="true" /><span className="track-preview-mark" aria-hidden="true">01 / DISCOVER</span></span>
+                    <span className="track-preview-copy"><strong>{label}</strong><ArrowUpRight size={17} aria-hidden="true" /></span>
+                  </Link>
+                ))}
+              </div>
             </div>
           )}
         </div>
