@@ -202,7 +202,7 @@ export default async function Home() {
 
       <section className="v3-community-banner shell" data-reveal>
         <div className="v3-community-text">
-          <span className="v3-community-eyebrow"><Globe2 size={16} /> PEOPLE > SOLO PROJECTS</span>
+          <span className="v3-community-eyebrow"><Globe2 size={16} /> PEOPLE &gt; SOLO PROJECTS</span>
           <h2>The best ideas<br />happen <em>together.</em></h2>
           <p>Good builders are everywhere. Finding your people shouldn't be hard. Step into a community that wants to make things happen.</p>
           <div className="v3-community-actions">
