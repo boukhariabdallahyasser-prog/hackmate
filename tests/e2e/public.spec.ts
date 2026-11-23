@@ -13,10 +13,29 @@ test("a visitor can open an event category from the landing page", async ({
   await page.getByLabel("Category").selectOption("coding");
   await page.getByRole("button", { name: "Apply filter" }).click();
   await expect(page).toHaveURL(/[?&]category=coding(?:&|$)/);
-  expect(
-    await page.evaluate(() => document.documentElement.scrollWidth),
-  ).toBeLessThanOrEqual(
-    await page.evaluate(() => document.documentElement.clientWidth),
+  const overflow = await page.evaluate(() => {
+    const viewport = document.documentElement.clientWidth;
+    const overflowing = [...document.querySelectorAll("*")]
+      .filter((element) => {
+        const rect = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        return (
+          style.display !== "none" &&
+          style.position !== "fixed" &&
+          rect.width > 0 &&
+          (rect.right > viewport + 1 || rect.left < -1)
+        );
+      })
+      .slice(0, 12)
+      .map((element) => ({
+        element: element.tagName.toLowerCase(),
+        className: typeof element.className === "string" ? element.className : "",
+        rect: Math.round(element.getBoundingClientRect().right),
+      }));
+    return { viewport, scrollWidth: document.documentElement.scrollWidth, overflowing };
+  });
+  expect(overflow.scrollWidth, JSON.stringify(overflow)).toBeLessThanOrEqual(
+    overflow.viewport,
   );
 });
 
