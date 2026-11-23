@@ -35,10 +35,25 @@ export function siteOrigin(): string {
     if (preview) return preview;
   }
 
-  return (
+  const configured =
     normalizedOrigin(process.env.APP_PUBLIC_SITE_URL) ||
-    normalizedOrigin(process.env.NEXT_PUBLIC_SITE_URL) ||
-    normalizedOrigin(process.env.VERCEL_PROJECT_PRODUCTION_URL) ||
+    normalizedOrigin(process.env.NEXT_PUBLIC_SITE_URL);
+  const vercelProduction =
+    normalizedOrigin(process.env.VERCEL_PROJECT_PRODUCTION_URL);
+
+  // A stale Cloudflare site setting must not send Vercel signup/reset
+  // confirmation links back to the previous host. Preserve custom domains.
+  if (
+    process.env.VERCEL_ENV === "production" &&
+    configured === "https://hackmate.yazerabdo01.workers.dev" &&
+    vercelProduction === "https://hackmate-v8jj.vercel.app"
+  ) {
+    return vercelProduction;
+  }
+
+  return (
+    configured ||
+    vercelProduction ||
     normalizedOrigin(process.env.VERCEL_URL) ||
     "http://localhost:3000"
   );

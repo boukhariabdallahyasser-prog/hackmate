@@ -1,12 +1,18 @@
+import { siteOrigin } from "@/lib/site-url";
+
 /**
- * This publishable API key is intentionally public. Never place a Supabase
- * secret/service-role key in source, NEXT_PUBLIC_* variables, or the browser.
+ * Supabase's publishable key is public, including in a browser bundle.
+ * Never put a secret key or service-role key in this file or NEXT_PUBLIC_*.
  *
- * The production-only fallback prevents a missing Workers runtime env binding
- * from silently disabling the entire sign-in and registration flow. Other
- * deployments must supply their own Supabase values explicitly.
+ * Known production origins get a last-resort fallback when a host has not
+ * injected public variables into its server runtime. Preview/other sites
+ * still require explicit credentials, preventing accidental use of
+ * production student records.
  */
-const productionSite = "https://hackmate.yazerabdo01.workers.dev";
+const productionOrigins = new Set([
+  "https://hackmate.yazerabdo01.workers.dev",
+  "https://hackmate-v8jj.vercel.app",
+]);
 const productionSupabase = {
   url: "https://fqydthbluwwczwaytifz.supabase.co",
   key: "sb_publishable_53uEU-SMwek644dG-1UiXg_YB3Sq94r",
@@ -14,11 +20,11 @@ const productionSupabase = {
 
 export function supabaseConfig() {
   const isKnownProductionSite =
-    (process.env.APP_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL) === productionSite;
+    process.env.VERCEL_ENV !== "preview" &&
+    productionOrigins.has(siteOrigin());
 
-  // Cloudflare Worker runtime receives these server-only aliases as text
-  // bindings. NEXT_PUBLIC_* may be inlined during a vinext/Next.js build but
-  // cannot be relied on as Worker runtime environment variables.
+  // Workers use the SUPABASE_* server bindings; Next.js on Vercel can use
+  // NEXT_PUBLIC_* directly. Explicit credentials always take precedence.
   const url =
     process.env.SUPABASE_URL ||
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
