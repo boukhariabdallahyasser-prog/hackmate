@@ -102,4 +102,38 @@ describe("Supabase runtime configuration", () => {
     expect(supabaseConfig()).toBeNull();
   });
 
+
+  test("Vercel production hostname overrides a stale site URL for public fallback", () => {
+    withoutRuntimeBindings();
+    vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv("VERCEL_PROJECT_PRODUCTION_URL", "hackmate-v8jj.vercel.app");
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://old-deployment.example.com");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "");
+    expect(supabaseConfig()).toEqual({
+      url: "https://fqydthbluwwczwaytifz.supabase.co",
+      key: expect.stringMatching(/^sb_publishable_/),
+    });
+  });
+
+  test("Vercel preview never inherits the production fallback from its production hostname", () => {
+    withoutRuntimeBindings();
+    vi.stubEnv("VERCEL_ENV", "preview");
+    vi.stubEnv("VERCEL_URL", "hackmate-preview.vercel.app");
+    vi.stubEnv("VERCEL_PROJECT_PRODUCTION_URL", "hackmate-v8jj.vercel.app");
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://old-deployment.example.com");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "");
+    expect(supabaseConfig()).toBeNull();
+  });
+
+  test("Cloudflare staging never silently inherits production Supabase", () => {
+    withoutRuntimeBindings();
+    vi.stubEnv("CLOUDFLARE_ENV", "staging");
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://hackmate.yazerabdo01.workers.dev");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "");
+    expect(supabaseConfig()).toBeNull();
+  });
+
 });

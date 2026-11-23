@@ -29,6 +29,29 @@ using the GitHub repository picker, which supplies the Git provider
 the connected app's team permission and the Git provider link are
 independent permissions.
 
+## Registration without manually configured environment variables
+
+For the **existing** production hostname `https://hackmate-v8jj.vercel.app`,
+HackMate can initialize its Supabase client using the project's public
+Supabase URL and publishable key already included in the application code.
+The fallback checks the trusted production hostname using Vercel's automatically
+provided deployment information, so an incorrect `NEXT_PUBLIC_SITE_URL`
+does not prevent initialization. No database password, service-role key, or
+secret key is bundled.
+
+**A new production deployment of the updated GitHub code is still required.**
+Setting environment variables in a different Vercel project or rebuilding
+an older commit will not fix the running deployment. The connected GitHub
+repository and the live Vercel project must be linked correctly.
+
+This fallback is deliberately unavailable to Vercel previews, Cloudflare
+staging, and unrelated hostnames. They must use their own explicit
+configuration. For custom production domains, use project-specific public
+variables instead of extending the fallback without verification.
+
+It remains necessary to allow the correct `/auth/confirm` callback in
+Supabase Auth and configure working email delivery for end-to-end signups.
+
 ## Required Vercel project environment variables
 
 Use **Project → Settings → Environment Variables**.
