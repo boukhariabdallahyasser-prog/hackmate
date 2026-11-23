@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   ArrowRight, ArrowUpRight, BookOpenCheck, CalendarDays, CheckCircle2,
-  ChevronDown, Compass, Fingerprint, Layers3, LockKeyhole, MailCheck,
+  ChevronDown, Compass, Fingerprint, LockKeyhole, MailCheck,
   MousePointer2, ShieldCheck, Sparkles, Trophy, UsersRound,
 } from "lucide-react";
 
