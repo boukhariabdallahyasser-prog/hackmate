@@ -7,7 +7,15 @@ import {
   Settings2, ShieldCheck, UserRound, UsersRound,
 } from "lucide-react";
 
-const links = [
+type NavItem = {
+  href: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  verified?: boolean;
+  staff?: boolean;
+};
+
+const links: NavItem[] = [
   { href: "/account", label: "Overview", icon: LayoutDashboard },
   { href: "/account/notifications", label: "Notifications", icon: Bell },
   { href: "/account/profile", label: "Profile", icon: UserRound, verified: true },
