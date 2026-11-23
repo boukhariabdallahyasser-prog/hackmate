@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowUpRight, Compass, Github, Terminal, UsersRound } from "lucide-react";
+import { ArrowUpRight, Compass, Code2, Terminal, UsersRound } from "lucide-react";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -49,7 +49,7 @@ export default function RootLayout({
             <div className="footer-links">
               <Link href="/events">Explore events</Link>
               <Link href="/about">About</Link>
-              <a href="https://github.com/boukhariabdallahyasser-prog/hackmate" target="_blank" rel="noreferrer"><Github size={16} aria-hidden="true" /> GitHub</a>
+              <a href="https://github.com/boukhariabdallahyasser-prog/hackmate" target="_blank" rel="noreferrer"><Code2 size={16} aria-hidden="true" /> GitHub</a>
             </div>
             <span className="footer-credit">Built for students across Algeria</span>
           </div>
