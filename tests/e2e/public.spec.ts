@@ -11,7 +11,7 @@ test("a visitor can open an event category from the landing page", async ({
   await expect(page).toHaveURL(/\/events\?category=workshop$/);
   await expect(page.getByLabel("Category")).toHaveValue("workshop");
   await page.getByLabel("Category").selectOption("coding");
-  await page.getByRole("button", { name: "Apply filter" }).click();
+  await page.getByRole("button", { name: "Apply filter" }).click({ noWaitAfter: true });
   await expect(page).toHaveURL(/[?&]category=coding(?:&|$)/);
   const overflow = await page.evaluate(() => {
     const viewport = document.documentElement.clientWidth;
@@ -47,14 +47,14 @@ test("title search, format and start date sorting work together", async ({
   if (testInfo.project.name === "mobile") await page.getByText("More filters", { exact: true }).click();
   await page.getByLabel("Format").selectOption("online");
   await page.getByLabel("Sort by start date").selectOption("latest");
-  await page.getByRole("button", { name: "Apply filter" }).click();
+  await page.getByRole("button", { name: "Apply filter" }).click({ noWaitAfter: true });
   await expect(page.locator(".event-card .event-title")).toHaveText([
     "Fixture Hackathon: Finals",
     "Fixture Hackathon",
   ]);
   await expect(page.getByLabel("Format")).toHaveValue("online");
   await page.getByLabel("Search by title").fill(".*");
-  await page.getByRole("button", { name: "Apply filter" }).click();
+  await page.getByRole("button", { name: "Apply filter" }).click({ noWaitAfter: true });
   await expect(page.getByRole("status")).toContainText("No published events match these filters.");
 });
 
@@ -142,7 +142,7 @@ test("published events support venue and registration filters and calendar expor
   await page
     .getByRole("combobox", { name: "Registration", exact: true })
     .selectOption("open");
-  await page.getByRole("button", { name: "Apply filter" }).click();
+  await page.getByRole("button", { name: "Apply filter" }).click({ noWaitAfter: true });
   await expect(page.locator(".event-card strong")).toHaveText([
     "Fixture Hackathon",
   ]);
