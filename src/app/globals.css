@@ -1896,3 +1896,24 @@ html.enhanced-motion [data-reveal].reveal-visible { opacity: 1; transform: trans
 @media(max-width:850px){.auth-layout{grid-template-columns:1fr;padding-block:1rem}.auth-story{border-radius:1rem 1rem 0 0;min-height:24rem;padding:5rem 2rem 2rem}.auth-story .auth-back{left:2rem}.auth-story-footer{margin-top:2rem}.auth-content{border-radius:0 0 1rem 1rem;padding:2.5rem 1.5rem}}
 @media(max-width:560px){.auth-story h2{font-size:2.7rem}.dashboard-quicklinks{grid-template-columns:1fr}.dashboard-section-head{align-items:start}.student-dashboard .dashboard-title::after{font-size:8rem}}
 @media(prefers-reduced-motion:reduce){.dashboard-quicklink{transition:none}.dashboard-quicklink:hover{transform:none}}
+
+
+/* Accessible credential controls and workspace overview. */
+.credential-field {display:grid;gap:.55rem}
+.credential-field>label {font-size:.85rem;font-weight:750}
+.credential-password-wrap {position:relative;display:flex;align-items:center}
+.auth-card .form-stack .credential-password-wrap input {width:100%;padding-right:3.5rem}
+.credential-visibility {position:absolute;right:.5rem;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:2.5rem;height:2.5rem;border:0;border-radius:.5rem;background:transparent;color:#536755;cursor:pointer}
+.credential-visibility:hover {background:#eff5e9;color:#193c27}
+.credential-visibility:focus-visible {outline:2px solid #467b24;outline-offset:1px}
+.credential-hint {color:#657468;font-size:.76rem}
+.dashboard-at-a-glance {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
+.dashboard-stat {display:grid;gap:.7rem;padding:1.4rem 1.5rem;background:#fff;border:1px solid #dbe3d7;border-radius:1rem;transition:border-color .2s,transform .2s}
+.dashboard-stat:hover {border-color:#7eab5e;transform:translateY(-2px)}
+.dashboard-stat>span {color:#5b6c5d;font-size:.69rem;font-weight:800;letter-spacing:.1em}
+.dashboard-stat>strong {font-size:clamp(2.4rem,4vw,3.5rem);line-height:1;letter-spacing:-.06em}
+.dashboard-stat>small {display:inline-flex;align-items:center;gap:.35rem;color:#4b6550;font-size:.78rem;font-weight:650}
+.dashboard-stat-action {background:#e9f5dc}
+.dashboard-stat-action>strong {display:flex;align-items:center;min-height:3.5rem;color:#2f6635}
+@media(max-width:680px){.dashboard-at-a-glance{grid-template-columns:1fr}.dashboard-stat{gap:.5rem}}
+@media(prefers-reduced-motion:reduce){.dashboard-stat{transition:none}.dashboard-stat:hover{transform:none}}

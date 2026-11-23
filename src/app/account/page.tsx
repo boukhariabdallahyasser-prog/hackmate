@@ -1,4 +1,4 @@
-import { ArrowUpRight, Bookmark, CalendarDays, Clock3, MapPin, Plus, Sparkles, UsersRound, Compass } from "lucide-react";
+import { ArrowUpRight, Bookmark, CalendarDays, Clock3, MapPin, Plus, Sparkles, UsersRound, Compass, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { signOut } from "@/app/auth/actions";
@@ -91,6 +91,11 @@ export default async function AccountPage() {
         </Button>
       </header>
       {announcement?.value && <p className="notice">{announcement.value}</p>}
+      <div className="dashboard-at-a-glance" aria-label="Your workspace at a glance">
+        <Link href="/account/saved" className="dashboard-stat"><span>SAVED EVENTS</span><strong>{savedCount.error ? "—" : savedCount.count ?? 0}</strong><small>Opportunities bookmarked <ArrowRight size={14} aria-hidden="true" /></small></Link>
+        <Link href="/events?upcoming=1" className="dashboard-stat"><span>UPCOMING EVENTS</span><strong>{results.ok ? results.events.length : "—"}</strong><small>{results.ok ? "Showing in your feed" : "Currently unavailable"} <ArrowRight size={14} aria-hidden="true" /></small></Link>
+        <Link href="/account/event" className="dashboard-stat dashboard-stat-action"><span>CONTRIBUTE</span><strong><Plus size={29} aria-hidden="true" /></strong><small>Suggest a new event <ArrowRight size={14} aria-hidden="true" /></small></Link>
+      </div>
       <div className="dashboard-quicklinks">
         <Link href="/events?upcoming=1" className="dashboard-quicklink"><Compass size={22} aria-hidden="true" /><span><strong>Explore events</strong><small>Find your next challenge</small></span><ArrowUpRight size={18} aria-hidden="true" /></Link>
         <Link href="/teams" className="dashboard-quicklink"><UsersRound size={22} aria-hidden="true" /><span><strong>Find your team</strong><small>Build with other students</small></span><ArrowUpRight size={18} aria-hidden="true" /></Link>
