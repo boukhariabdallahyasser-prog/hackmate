@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowUpRight, Plus, Sparkles, UsersRound } from "lucide-react";
 import { ActionForm } from "@/components/action-form";
 import { uuid } from "@/lib/forms";
 import { requireMember } from "@/lib/supabase/server";
@@ -81,8 +82,20 @@ export default async function TeamsPage({
       (team) => !selectedEvent.success || team.event_id === selectedEvent.data,
     ) ?? [];
   return (
-    <section className="shell section member-content">
-      <h1>{current ? `Teams for ${current.title}` : "Event teams"}</h1>
+    <section className="shell section member-content v3-teams-page">
+      <div className="v3-member-hero v3-member-teams" data-reveal>
+        <div>
+          <span className="v3-member-hero-label"><Sparkles size={17} aria-hidden="true" /> BUILD BETTER TOGETHER</span>
+          <h1>{current ? `Teams for ${current.title}` : "Find your people."}</h1>
+          <p>Explore teams forming around real challenges, meet motivated builders, or start a crew of your own.</p>
+          {events.data?.length ? (
+            <a href="#create-team" className="v3-member-hero-cta"><Plus size={18} aria-hidden="true" /> Create a team <ArrowUpRight size={17} aria-hidden="true" /></a>
+          ) : (
+            <Link href="/events" className="v3-member-hero-cta">Explore events <ArrowUpRight size={17} aria-hidden="true" /></Link>
+          )}
+        </div>
+        <div className="v3-member-hero-symbol" aria-hidden="true"><UsersRound size={67} /></div>
+      </div>
       {!!params.event && (
         <Link className="underlined" href="/teams">
           Browse all teams
@@ -164,16 +177,15 @@ export default async function TeamsPage({
               className="event-card"
               key={team.id}
             >
+              <span className="v3-team-card-top"><span className="v3-team-icon"><UsersRound size={24} aria-hidden="true" /></span><ArrowUpRight size={19} aria-hidden="true" /></span>
               <strong>{team.name}</strong>
               <p className="meta">
                 {eventNames.get(team.event_id)}
                 {team.leader_id === id && " · You lead this team"}
               </p>
               <p>{team.open_positions || team.description}</p>
-              <span>
-                {team.recruitment_open && team.visibility === "members"
-                  ? "Recruiting"
-                  : "Invitation only or closed"}
+              <span className={team.recruitment_open && team.visibility === "members" ? "v3-team-status recruiting" : "v3-team-status"}>
+                {team.recruitment_open && team.visibility === "members" ? "Recruiting" : "Invitation only or closed"}
               </span>
             </Link>
           ))}
@@ -182,8 +194,8 @@ export default async function TeamsPage({
         <p className="notice">No teams match this view.</p>
       )}
       {!!events.data?.length && (
-        <details className="notice form-page">
-          <summary>Create a team</summary>
+        <details className="notice form-page v3-team-create" id="create-team">
+          <summary><Plus size={19} aria-hidden="true" /> Create a team <ArrowUpRight size={19} aria-hidden="true" /></summary>
           <ActionForm action={saveTeam.bind(null, null)} submit="Create team">
             <label>
               Event

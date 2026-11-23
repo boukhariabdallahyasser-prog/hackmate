@@ -102,18 +102,27 @@ export default async function EventsPage({
   }
 
   return (
-    <section className="shell section">
-      <div className="event-page-intro">
-        <span className="section-kicker">YOUR NEXT CHALLENGE AWAITS</span>
-        <h1>{upcomingOnly ? "Upcoming events" : "Explore events"}<span className="event-heading-period">.</span></h1>
-        <p>Hackathons, workshops, competitions and more. Find the right opportunity to learn, compete and connect.</p>
+    <section className="v3-directory shell">
+      <div className="v3-directory-hero" data-reveal>
+        <div className="v3-directory-hero-copy">
+          <span className="v3-section-kicker"><span>EVENTS / FIND YOUR THING</span> BUILDERS WANTED</span>
+          <h1>{upcomingOnly ? "Upcoming events" : "Find your next"}{!upcomingOnly && <><br /><em>obsession.</em></>}<span className="v3-directory-endmark">✳</span></h1>
+          <p>Hackathons, code battles, workshops and ideas worth losing sleep over. Find the opportunities that get you moving.</p>
+          <div className="v3-directory-hints"><span><Compass size={14} aria-hidden="true" /> Across Algeria</span><span><CalendarDays size={14} aria-hidden="true" /> Real event dates</span><span><Search size={14} aria-hidden="true" /> Your kind of challenge</span></div>
+        </div>
+        <div className="v3-directory-hero-art" aria-hidden="true"><span className="v3-directory-hero-loop">✳</span><span className="v3-directory-hero-type">FIND / BUILD<br />REPEAT / LEVEL UP</span><span className="v3-directory-float-one">DISCOVER SOMETHING NEW</span><span className="v3-directory-float-two">↗</span></div>
       </div>
+      <div className="v3-filters-wrapper">
+        <div className="v3-filters-caption"><span>EXPLORE BY INTEREST</span><span>01 / REFINE YOUR WORLD</span></div>
       <nav aria-label="Quick event filters" className="event-quick-links">
         <Link className={!upcomingOnly && !category ? "is-active" : ""} href="/events"><Compass size={16} aria-hidden="true" /> All events</Link>
         <Link className={upcomingOnly ? "is-active" : ""} href="/events?upcoming=1"><CalendarDays size={16} aria-hidden="true" /> Upcoming</Link>
         <Link className={category === "hackathon" ? "is-active" : ""} href="/events?category=hackathon">Hackathons</Link>
         <Link className={category === "workshop" ? "is-active" : ""} href="/events?category=workshop">Workshops</Link>
         <Link className={category === "coding" ? "is-active" : ""} href="/events?category=coding">Coding</Link>
+        <Link className={category === "ai" ? "is-active" : ""} href="/events?category=ai">AI & machine learning</Link>
+        <Link className={category === "ctf" ? "is-active" : ""} href="/events?category=ctf">Cybersecurity</Link>
+        <Link className={category === "robotics" ? "is-active" : ""} href="/events?category=robotics">Robotics</Link>
       </nav>
       <div className="filter-heading"><span><SlidersHorizontal size={18} aria-hidden="true" /> Refine your search</span><Link className="underlined" href={pageHref(1, !upcomingOnly)}>{upcomingOnly ? "Browse all dates" : "Show upcoming only"}</Link></div>
       <form key={formKey} className="filter" action="/events">
@@ -227,6 +236,7 @@ export default async function EventsPage({
           </Link>
         )}
       </form>
+      </div>
       {!result ? (
         <p className="notice" role="alert">
           The end date must be on or after the start date.
@@ -237,7 +247,7 @@ export default async function EventsPage({
         </p>
       ) : (
         <>
-          <div className="results-heading"><h2>{result.events.length ? "Discover what's happening" : "Your results"}</h2><span>{result.events.length ? "Explore events matching your interests" : "Try a different search"}</span></div>
+          <div className="results-heading v3-results-heading"><div><span className="v3-section-kicker">THE OPPORTUNITY BOARD</span><h2>{result.events.length ? "Discover what's happening" : "Your results"}</h2></div><span>{result.events.length ? `${result.events.length} event${result.events.length === 1 ? "" : "s"} on this page` : "Try another search or clear your filters"}</span></div>
           {result.events.length === 0 ? (
             <p className="notice" role="status">
               {search ||
@@ -259,8 +269,11 @@ export default async function EventsPage({
                   key={event.id}
                   href={`/events/${event.slug}`}
                 >
-                  <EventArtwork title={event.title} slug={event.slug} cover={event.cover_path} className="listing-poster" />
-                  <span className="event-card-head"><span className="event-source">{sourceStatus(event.source_status)}</span><ArrowUpRight size={19} aria-hidden="true" /></span>
+                  <span className="v3-directory-cover">
+                    <EventArtwork title={event.title} slug={event.slug} cover={event.cover_path} className="listing-poster" />
+                    <span className="v3-directory-cover-label">{categories[event.category as keyof typeof categories] ?? "Tech event"}</span>
+                  </span>
+                  <span className="event-card-head"><span className="event-source">{sourceStatus(event.source_status)}</span><span className="v3-card-arrow"><ArrowUpRight size={19} aria-hidden="true" /></span></span>
                   <span className="event-type">{categories[event.category as keyof typeof categories] ?? "Tech event"}</span>
                   <strong>{event.title}</strong>
                   <span className="event-card-details">
