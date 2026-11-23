@@ -55,3 +55,26 @@ The Supabase CLI v3 defaults to a **local** project and requires explicit `--rem
 Test the live event directory, calendar download, sign-in, student approval, onboarding, team join and leadership workflows, staff-only moderation and private evidence retrieval. Check that the Cloudflare Workers origin returns the intended build, that Auth redirects match the canonical origin, and that sensitive responses are not cached publicly.
 
 For local development, run `npm ci`, `npx supabase start`, `npm run test:e2e`, and `npm run build:vinext` with appropriate local environment variables. See [Development](DEVELOPMENT.md) and [Security](SECURITY.md).
+
+
+## Diagnosing "Registration is temporarily unavailable"
+
+The sign-up action returns this message only when `serverClient()` cannot
+initialize, generally because one of the public Supabase configuration values
+is absent at runtime. The production Worker has a guarded, publishable-key-only
+fallback for the HackMate site URL; other sites and local/preview builds must
+provide their own `NEXT_PUBLIC_SUPABASE_URL` and
+`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Supabase service-role keys never
+belong in the bundle.
+
+**A successful build is not a deployment.** GitHub Actions requires the
+`CLOUDFLARE_API_TOKEN` repository secret to publish the actual Worker. After
+adding it, rerun the newest production workflow or push a reviewed update to
+`main`; then check the live site's sign-in and registration endpoints
+directly.
+
+The connected Supabase project `fqydthbluwwczwaytifz` has the ENSIA domain
+`ensia.edu.dz` enabled. A student needs an eligible institutional email,
+working email confirmation delivery, and staff approval before accessing
+verified-member features. An initial confirmed super-admin account must be
+bootstrapped through the documented privileged procedure.
