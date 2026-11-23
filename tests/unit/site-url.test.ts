@@ -56,4 +56,20 @@ describe("siteOrigin", () => {
     vi.stubEnv("NEXT_PUBLIC_SITE_URL", "http://localhost:3000");
     expect(siteOrigin()).toBe("http://localhost:3000");
   });
+  test("Vercel production ignores a stale Cloudflare confirmation origin", () => {
+    clearOrigins();
+    vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://hackmate.yazerabdo01.workers.dev");
+    vi.stubEnv("VERCEL_PROJECT_PRODUCTION_URL", "hackmate-v8jj.vercel.app");
+    expect(siteOrigin()).toBe("https://hackmate-v8jj.vercel.app");
+  });
+
+  test("Vercel deployment preserves a deliberately configured custom domain", () => {
+    clearOrigins();
+    vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://events.example.org");
+    vi.stubEnv("VERCEL_PROJECT_PRODUCTION_URL", "hackmate-v8jj.vercel.app");
+    expect(siteOrigin()).toBe("https://events.example.org");
+  });
+
 });
