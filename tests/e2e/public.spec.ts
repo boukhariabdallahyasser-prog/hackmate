@@ -108,7 +108,7 @@ test("the home agenda opens published future events and excludes past events", a
     page.getByRole("heading", { name: "Upcoming events" }),
   ).toBeVisible();
   await expect(page.getByText("Past Event")).toHaveCount(0);
-  await page.getByRole("link", { name: "Browse all dates" }).click();
+  await page.getByRole("link", { name: "All events", exact: true }).click();
   await expect(page.getByText("Past Event")).toBeVisible();
 });
 
