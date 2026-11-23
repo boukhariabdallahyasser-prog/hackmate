@@ -88,7 +88,11 @@ export default async function TeamsPage({
           <span className="v3-member-hero-label"><Sparkles size={17} aria-hidden="true" /> BUILD BETTER TOGETHER</span>
           <h1>{current ? `Teams for ${current.title}` : "Find your people."}</h1>
           <p>Explore teams forming around real challenges, meet motivated builders, or start a crew of your own.</p>
-          <a href="#create-team" className="v3-member-hero-cta"><Plus size={18} aria-hidden="true" /> Create a team <ArrowUpRight size={17} aria-hidden="true" /></a>
+          {events.data?.length ? (
+            <a href="#create-team" className="v3-member-hero-cta"><Plus size={18} aria-hidden="true" /> Create a team <ArrowUpRight size={17} aria-hidden="true" /></a>
+          ) : (
+            <Link href="/events" className="v3-member-hero-cta">Explore events <ArrowUpRight size={17} aria-hidden="true" /></Link>
+          )}
         </div>
         <div className="v3-member-hero-symbol" aria-hidden="true"><UsersRound size={67} /></div>
       </div>
