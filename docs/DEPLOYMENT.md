@@ -1,5 +1,12 @@
 # Deploying HackMate
 
+**Current hosting target: Vercel (native Next.js).** Start with the **[Vercel deployment guide](VERCEL.md)** for GitHub import, Supabase settings, redirects and production verification.
+
+**Former hosting target: Cloudflare Workers.** The material below is retained as legacy reference. The Cloudflare site remains untouched, while GitHub CI now runs Next.js checks only and does not require a Cloudflare API token.
+
+---
+
+
 The main target is **Cloudflare Workers** with **Supabase Auth, Postgres and private Storage**. GitHub Actions builds pull requests and builds/deploys changes merged to `main`, provided the required settings exist. Vercel is not required for this deployment.
 
 > Never merge an unreviewed change as a way to test production. The repo's [AGENTS.md](../AGENTS.md) requires owner approval before production deployment, changes to hosted data, or changes that incur charges.
