@@ -180,7 +180,7 @@ export default async function Home() {
 
       <section className="v3-how-section shell" id="how-it-works">
         <div className="v3-section-header" data-reveal>
-          <div><span className="v3-section-kicker"><span>03 / 03</span> FROM WHAT IF TO WHAT'S NEXT</span><h2>It starts with <em>you.</em></h2></div>
+          <div><span className="v3-section-kicker"><span>03 / 03</span> FROM WHAT IF TO WHAT&apos;S NEXT</span><h2>It starts with <em>you.</em></h2></div>
           <div className="v3-section-intro"><p>You don&apos;t need everything figured out. Just a challenge, an open mind and people to build alongside.</p></div>
         </div>
         <div className="v3-journey">
@@ -204,7 +204,7 @@ export default async function Home() {
         <div className="v3-community-text">
           <span className="v3-community-eyebrow"><Globe2 size={16} /> PEOPLE &gt; SOLO PROJECTS</span>
           <h2>The best ideas<br />happen <em>together.</em></h2>
-          <p>Good builders are everywhere. Finding your people shouldn't be hard. Step into a community that wants to make things happen.</p>
+          <p>Good builders are everywhere. Finding your people shouldn&apos;t be hard. Step into a community that wants to make things happen.</p>
           <div className="v3-community-actions">
             <Link className="v3-community-join" href="/auth/register">Join the community <ArrowUpRight size={19} aria-hidden="true" /></Link>
             <Link className="v3-community-explore" href="/community">See the community <ChevronRight size={19} aria-hidden="true" /></Link>
