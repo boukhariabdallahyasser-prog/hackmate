@@ -2,6 +2,8 @@
 
 HackMate helps Algerian university students discover tech events, meet collaborators, and form teams.
 
+**Hosting:** Next.js on Vercel (GitHub-linked deployment), with Supabase Auth, Postgres and Storage. See [Vercel setup](docs/VERCEL.md) for the exact repository import, environment variables, and authentication redirect checklist. The previous Cloudflare Worker remains unchanged until Vercel is verified.
+
 - Public event directory with shareable pages, title search, category and format filters, and date sorting.
 - University email registration, confirmation, password recovery, private proof of enrollment, and manual student verification.
 - Verified student profiles, explainable teammate recommendations, event interest, teams, invitations, and join requests.
