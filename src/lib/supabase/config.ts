@@ -13,8 +13,15 @@ const productionSupabase = {
 };
 
 export function supabaseConfig() {
-  const isKnownProductionSite =
-    (process.env.APP_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL) === productionSite;
+  const configuredSite = (process.env.APP_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || "").trim();
+  const isPreview = ["preview", "staging", "development"].includes(process.env.CLOUDFLARE_ENV ?? "");
+  // The production Worker can run without process.env being populated by workerd.
+  // Only use public production defaults for the production build, never for an
+  // explicitly isolated preview or a different configured site.
+  const useProductionDefaults =
+    !isPreview &&
+    process.env.NODE_ENV === "production" &&
+    (!configuredSite || configuredSite === productionSite);
 
   // Cloudflare Worker runtime receives these server-only aliases as text
   // bindings. NEXT_PUBLIC_* may be inlined during a vinext/Next.js build but
@@ -22,10 +29,10 @@ export function supabaseConfig() {
   const url =
     process.env.SUPABASE_URL ||
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    (isKnownProductionSite ? productionSupabase.url : "");
+    (useProductionDefaults ? productionSupabase.url : "");
   const key =
     process.env.SUPABASE_PUBLISHABLE_KEY ||
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-    (isKnownProductionSite ? productionSupabase.key : "");
+    (useProductionDefaults ? productionSupabase.key : "");
   return url && key ? { url, key } : null;
 }
