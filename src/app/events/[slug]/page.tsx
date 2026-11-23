@@ -14,7 +14,7 @@ import {
   sourceStatus,
 } from "@/lib/events";
 import { memberSession } from "@/lib/supabase/server";
-import { httpsUrl } from "@/lib/forms";
+import { EventArtwork } from "@/components/event-artwork";
 
 export const dynamic = "force-dynamic";
 const eventForRequest = cache(getEvent);
@@ -33,7 +33,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: event.title,
     description,
     alternates: { canonical: path },
-    openGraph: { title: event.title, description, url: path, type: "website" },
+    openGraph: { title: event.title, description, url: path, type: "website", images: [event.cover_path?.startsWith("https://") ? event.cover_path : `${path}/poster`] },
   };
 }
 
@@ -65,8 +65,7 @@ export default async function EventPage({ params }: Props) {
         .maybeSingle()
     : null;
   const registration = externalUrl(event.registration_url);
-  const cover = httpsUrl(event.cover_path);
-  const deadlinePassed = result.registrationClosed;
+   const deadlinePassed = result.registrationClosed;
   const source =
     externalUrl(event.official_url) ?? externalUrl(event.source_url);
   return (
@@ -74,19 +73,7 @@ export default async function EventPage({ params }: Props) {
       <Link href="/events">All events</Link>
       <p className="meta">{sourceStatus(event.source_status)}</p>
       <h1>{event.title}</h1>
-      {cover && (
-        <div className="event-cover">
-          {/* eslint-disable-next-line @next/next/no-img-element -- Externally hosted submission covers are loaded directly after URL validation. */}
-          <img
-            src={cover}
-            alt=""
-            width={900}
-            height={360}
-            referrerPolicy="no-referrer"
-            loading="lazy"
-          />
-        </div>
-      )}
+      <EventArtwork title={event.title} slug={event.slug} cover={event.cover_path} className="detail-poster" priority />
       <p>
         {event.organizer} · {event.location ?? event.format}
       </p>
