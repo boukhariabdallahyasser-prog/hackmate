@@ -22,9 +22,10 @@ test("a visitor can open an event category from the landing page", async ({
 
 test("title search, format and start date sorting work together", async ({
   page,
-}) => {
+}, testInfo) => {
   await page.goto("/events?category=hackathon");
   await page.getByLabel("Search by title").fill("fIxTuRe");
+  if (testInfo.project.name === "mobile") await page.getByText("More filters", { exact: true }).click();
   await page.getByLabel("Format").selectOption("online");
   await page.getByLabel("Sort by start date").selectOption("latest");
   await page.getByRole("button", { name: "Apply filter" }).click();
@@ -115,8 +116,9 @@ test("the home agenda opens published future events and excludes past events", a
 test("published events support venue and registration filters and calendar export", async ({
   page,
   request,
-}) => {
+}, testInfo) => {
   await page.goto("/events");
+  if (testInfo.project.name === "mobile") await page.getByText("More filters", { exact: true }).click();
   await page.getByLabel("City or venue").fill("algiers");
   await page
     .getByRole("combobox", { name: "Registration", exact: true })
