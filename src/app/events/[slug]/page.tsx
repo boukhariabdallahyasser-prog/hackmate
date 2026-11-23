@@ -65,7 +65,7 @@ export default async function EventPage({ params }: Props) {
         .maybeSingle()
     : null;
   const registration = externalUrl(event.registration_url);
-   const deadlinePassed = result.registrationClosed;
+  const deadlinePassed = result.registrationClosed;
   const source =
     externalUrl(event.official_url) ?? externalUrl(event.source_url);
   return (
