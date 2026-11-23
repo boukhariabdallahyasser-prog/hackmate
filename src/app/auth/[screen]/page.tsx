@@ -97,6 +97,7 @@ export default async function AuthPage({
             ) : (
               <>
                 <p>Already have an account? <Link href="/auth/sign-in">Sign in <ArrowUpRight size={14} aria-hidden="true" /></Link></p>
+                {screen === "register" && <Link href="/auth/recover">Forgot your password?</Link>}
                 {screen === "reset" && <Link href="/auth/recover">Request a new recovery link</Link>}
               </>
             )}
