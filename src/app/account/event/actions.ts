@@ -168,6 +168,8 @@ export async function saveBookmark(
   if (error && error.code !== "23505")
     return { message: "The bookmark could not be updated." };
   revalidatePath("/account/submissions");
+  revalidatePath("/account");
+  revalidatePath("/account/saved");
   revalidatePath("/events/[slug]", "page");
   return {
     message: previouslySaved ? "Bookmark removed." : "Event bookmarked.",
