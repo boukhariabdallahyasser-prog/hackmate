@@ -78,9 +78,9 @@ test("account navigation protects private pages and exposes registration and rec
   await page.getByRole("link", { name: "My space", exact: true }).click();
   await expect(page).toHaveURL(/\/auth\/sign-in$/);
   await expect(
-    page.getByRole("heading", { name: "Sign in to HackMate" }),
+    page.getByRole("heading", { name: "Welcome back." }),
   ).toBeVisible();
-  await page.getByRole("link", { name: "Create an account" }).click();
+  await page.getByRole("link", { name: /Join HackMate/ }).click();
   await expect(
     page.getByRole("textbox", { name: "University email" }),
   ).toBeVisible();

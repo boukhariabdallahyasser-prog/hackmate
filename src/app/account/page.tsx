@@ -1,4 +1,4 @@
-import { ArrowUpRight, Bookmark, CalendarDays, Clock3, MapPin, Plus } from "lucide-react";
+import { ArrowUpRight, Bookmark, CalendarDays, Clock3, MapPin, Plus, Sparkles, UsersRound, Compass } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { signOut } from "@/app/auth/actions";
@@ -75,11 +75,12 @@ export default async function AccountPage() {
     <section className="student-dashboard">
       <header className="dashboard-title">
         <div>
-          <h1>Upcoming hackathons</h1>
+          <span className="dashboard-eyebrow"><Sparkles size={15} aria-hidden="true" /> YOUR STUDENT WORKSPACE</span>
+          <h1>Your next big thing<br /><em>starts here.</em></h1>
           <p>
             {profile
-              ? `Welcome, ${profile.full_name}.`
-              : "Discover student tech events across Algeria."}
+              ? `Welcome back, ${profile.full_name}. Ready to build something?`
+              : "Discover what’s next for student builders across Algeria."}
           </p>
         </div>
         <Button asChild>
@@ -90,12 +91,17 @@ export default async function AccountPage() {
         </Button>
       </header>
       {announcement?.value && <p className="notice">{announcement.value}</p>}
+      <div className="dashboard-quicklinks">
+        <Link href="/events?upcoming=1" className="dashboard-quicklink"><Compass size={22} aria-hidden="true" /><span><strong>Explore events</strong><small>Find your next challenge</small></span><ArrowUpRight size={18} aria-hidden="true" /></Link>
+        <Link href="/teams" className="dashboard-quicklink"><UsersRound size={22} aria-hidden="true" /><span><strong>Find your team</strong><small>Build with other students</small></span><ArrowUpRight size={18} aria-hidden="true" /></Link>
+      </div>
       <Link href="/account/saved" className="dashboard-saved-link">
         <Bookmark size={21} aria-hidden="true" />
         <span><strong>My saved events</strong><small>Plan your next opportunity and keep private notes</small></span>
         <span className="dashboard-saved-count">{savedCount.error ? "View" : `${savedCount.count ?? 0} saved`}</span>
         <ArrowUpRight size={18} aria-hidden="true" />
       </Link>
+      <div className="dashboard-section-head"><div><span className="dashboard-eyebrow">ON YOUR RADAR</span><h2>Upcoming opportunities</h2></div><Link href="/events?upcoming=1">View all <ArrowUpRight size={16} aria-hidden="true" /></Link></div>
       {!results.ok ? (
         <p className="notice" role="alert">
           Upcoming events are temporarily unavailable.
