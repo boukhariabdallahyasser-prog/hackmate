@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowUpRight, Github, Heart, Mail, Zap } from "lucide-react";
+import { ArrowUpRight, Code2, Heart, Mail, Zap } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { MotionLayer } from "@/components/motion-layer";
 import "./globals.css";
@@ -61,7 +61,7 @@ export default function RootLayout({
               </div>
               <div className="footer-v3-links">
                 <strong>PROJECT</strong>
-                <a href="https://github.com/boukhariabdallahyasser-prog/hackmate" rel="noreferrer" target="_blank"><Github size={16} aria-hidden="true" /> Open source <ArrowUpRight size={14} aria-hidden="true" /></a>
+                <a href="https://github.com/boukhariabdallahyasser-prog/hackmate" rel="noreferrer" target="_blank"><Code2 size={16} aria-hidden="true" /> Open source <ArrowUpRight size={14} aria-hidden="true" /></a>
                 <Link href="/about"><Mail size={16} aria-hidden="true" /> About us</Link>
                 <span>Designed for student builders.</span>
               </div>
