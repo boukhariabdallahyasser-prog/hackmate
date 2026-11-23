@@ -2,13 +2,26 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  ArrowUpRight,
+  CalendarDays,
+  Clock3,
+  ExternalLink,
+  Flag,
+  MapPin,
+  UsersRound,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ActionForm } from "@/components/action-form";
 import { reportItem, saveBookmark } from "@/app/account/event/actions";
 import {
+  categories,
   eventDate,
   eventSkillNames,
   externalUrl,
+  formats,
   getEvent,
   relatedEvents,
   sourceStatus,
@@ -44,7 +57,8 @@ export default async function EventPage({ params }: Props) {
     return (
       <section className="shell section">
         <h1>Event unavailable</h1>
-        <Link href="/events">Back to events</Link>
+        <p>We couldn&apos;t load this event right now.</p>
+        <Link href="/events" className="underlined">Back to events</Link>
       </section>
     );
   }
@@ -67,122 +81,165 @@ export default async function EventPage({ params }: Props) {
   const registration = externalUrl(event.registration_url);
   const cover = httpsUrl(event.cover_path);
   const deadlinePassed = result.registrationClosed;
-  const source =
-    externalUrl(event.official_url) ?? externalUrl(event.source_url);
+  const source = externalUrl(event.official_url) ?? externalUrl(event.source_url);
+  const category = categories[event.category as keyof typeof categories] ?? "Tech event";
+  const format = formats[event.format as keyof typeof formats] ?? event.format;
+
   return (
-    <article className="shell section prose">
-      <Link href="/events">All events</Link>
-      <p className="meta">{sourceStatus(event.source_status)}</p>
-      <h1>{event.title}</h1>
+    <article className="shell section event-detail">
+      <Link className="event-breadcrumb" href="/events">
+        <ArrowLeft size={16} aria-hidden="true" /> Back to events
+      </Link>
+      <header className="event-detail-hero">
+        <div className="event-detail-labels">
+          <span className="event-detail-category">{category}</span>
+          <span className="event-detail-format">{format}</span>
+        </div>
+        <h1>{event.title}</h1>
+        <p className="event-hosted">Organized by <strong>{event.organizer}</strong></p>
+        <span className="event-detail-source">{sourceStatus(event.source_status)}</span>
+      </header>
       {cover && (
-        <div className="event-cover">
-          {/* eslint-disable-next-line @next/next/no-img-element -- Externally hosted submission covers are loaded directly after URL validation. */}
-          <img
-            src={cover}
-            alt=""
-            width={900}
-            height={360}
-            referrerPolicy="no-referrer"
-            loading="lazy"
-          />
+        <div className="event-detail-cover">
+          {/* eslint-disable-next-line @next/next/no-img-element -- Externally hosted event cover is loaded directly after URL validation. */}
+          <img src={cover} alt="" width={1100} height={440} referrerPolicy="no-referrer" loading="lazy" />
         </div>
       )}
-      <p>
-        {event.organizer} · {event.location ?? event.format}
-      </p>
-      <p>
-        <time dateTime={event.starts_at}>{eventDate(event.starts_at)}</time> –{" "}
-        <time dateTime={event.ends_at}>{eventDate(event.ends_at)}</time>{" "}
-        (Algeria time)
-      </p>
-      {event.registration_deadline && (
-        <p>
-          {deadlinePassed ? "Registration closed" : "Registration deadline"} ·{" "}
-          <time dateTime={event.registration_deadline}>
-            {eventDate(event.registration_deadline)}
-          </time>
-        </p>
-      )}
-      <p>{event.description}</p>
-      <p>
-        Team size · {event.min_team_size}–{event.max_team_size}
-      </p>
-      {skills.length > 0 && <p>Required skills · {skills.join(", ")}</p>}
-      {event.eligibility && (
-        <>
-          <h2>Eligibility</h2>
-          <p>{event.eligibility}</p>
-        </>
-      )}
-      {event.prizes && (
-        <>
-          <h2>Prizes</h2>
-          <p>{event.prizes}</p>
-        </>
-      )}
-      <div className="text-links">
-        {registration && !deadlinePassed && (
-          <Button asChild>
-            <a href={registration}>Visit registration page</a>
-          </Button>
-        )}
-        <Link
-          className="underlined"
-          href={`/events/${event.slug}/calendar`}
-          prefetch={false}
-          download
-        >
-          Download calendar event
-        </Link>
-      </div>
-      {source && (
-        <p>
-          <a href={source}>Visit event source</a>
-        </p>
-      )}
-      {verified && (
-        <div className="card-list">
-          <div className="text-links">
-            <Link href={`/teams?event=${event.id}`}>Find event teams</Link>
-            <Link href={`/community?event=${event.id}`}>Find teammates</Link>
-          </div>
-          {!bookmark?.error && (
-            <ActionForm
-              action={saveBookmark.bind(null, event.id, !!bookmark?.data)}
-              submit={bookmark?.data ? "Remove bookmark" : "Bookmark event"}
-            />
+      <div className="event-detail-grid">
+        <div className="event-detail-main">
+          <section className="event-about">
+            <p className="section-overline">THE OPPORTUNITY</p>
+            <h2>About this event</h2>
+            <p className="event-description">{event.description}</p>
+          </section>
+          {(event.eligibility || event.prizes) && (
+            <section className="event-detail-block">
+              <h2>What to know</h2>
+              {event.eligibility && (
+                <div className="event-detail-info-row">
+                  <strong>Who can participate</strong>
+                  <p>{event.eligibility}</p>
+                </div>
+              )}
+              {event.prizes && (
+                <div className="event-detail-info-row">
+                  <strong>Prizes and recognition</strong>
+                  <p>{event.prizes}</p>
+                </div>
+              )}
+            </section>
           )}
-          <details className="notice">
-            <summary>Report event</summary>
-            <ActionForm
-              action={reportItem.bind(null, "event", event.id)}
-              submit="Send report"
-            >
-              <label>
-                Reason
-                <textarea
-                  name="reason"
-                  minLength={10}
-                  maxLength={1000}
-                  required
-                />
-              </label>
-            </ActionForm>
-          </details>
+          <section className="event-detail-block">
+            <h2>Building with a team?</h2>
+            <p className="event-detail-help">Know the team requirements before you start looking for collaborators.</p>
+            <div className="event-team-info">
+              <div>
+                <UsersRound size={20} aria-hidden="true" />
+                <div><strong>Team size</strong><span>{event.min_team_size}–{event.max_team_size} members</span></div>
+              </div>
+              {skills.length > 0 && (
+                <div>
+                  <div><strong>Relevant skills</strong><span>{skills.join(", ")}</span></div>
+                </div>
+              )}
+            </div>
+            <div className="event-team-buttons">
+              {verified ? (
+                <>
+                  <Link href={`/teams?event=${event.id}`} className="event-team-button">
+                    Find event teams <ArrowUpRight size={17} aria-hidden="true" />
+                  </Link>
+                  <Link href={`/community?event=${event.id}`} className="event-team-secondary">
+                    Find teammates <ArrowRight size={17} aria-hidden="true" />
+                  </Link>
+                </>
+              ) : (
+                <Link href="/auth/register" className="event-team-button">
+                  Join HackMate to find teammates <ArrowUpRight size={17} aria-hidden="true" />
+                </Link>
+              )}
+            </div>
+          </section>
+          {!!related.length && (
+            <section className="event-related">
+              <div className="teams-section-heading"><h2>More like this</h2><Link href="/events" className="underlined">All events <ArrowRight size={16} aria-hidden="true" /></Link></div>
+              <div className="event-related-list">
+                {related.map((item) => (
+                  <Link href={`/events/${item.slug}`} key={item.id}>
+                    <span><strong>{item.title}</strong><small>{eventDate(item.starts_at)}</small></span>
+                    <ArrowUpRight size={18} aria-hidden="true" />
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
-      )}
-      {!!related.length && (
-        <div className="card-list">
-          <h2>Related events</h2>
-          <ul>
-            {related.map((item) => (
-              <li key={item.id}>
-                <Link href={`/events/${item.slug}`}>{item.title}</Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+        <aside className="event-detail-side" aria-label="Event information and actions">
+          <section className="event-info-card">
+            <h2>Event details</h2>
+            <dl>
+              <div>
+                <dt><CalendarDays size={18} aria-hidden="true" /> Starts</dt>
+                <dd><time dateTime={event.starts_at}>{eventDate(event.starts_at)}</time></dd>
+              </div>
+              <div>
+                <dt><Clock3 size={18} aria-hidden="true" /> Ends</dt>
+                <dd><time dateTime={event.ends_at}>{eventDate(event.ends_at)}</time></dd>
+              </div>
+              <div>
+                <dt><MapPin size={18} aria-hidden="true" /> Location</dt>
+                <dd>{event.location ?? format}</dd>
+              </div>
+              {event.registration_deadline && (
+                <div>
+                  <dt><CalendarDays size={18} aria-hidden="true" /> Registration deadline</dt>
+                  <dd><time dateTime={event.registration_deadline}>{eventDate(event.registration_deadline)}</time></dd>
+                </div>
+              )}
+            </dl>
+            {deadlinePassed && <p className="event-registration-note">Registration deadline has passed.</p>}
+            {registration && !deadlinePassed && (
+              <Button asChild>
+                <a href={registration} target="_blank" rel="noopener noreferrer">
+                  Visit registration page <ExternalLink size={16} aria-hidden="true" />
+                </a>
+              </Button>
+            )}
+            {!registration && !deadlinePassed && (
+              <p className="event-registration-note">No registration link has been provided. Check the event source for the latest details.</p>
+            )}
+            {source && (
+              <a className="event-source-link" href={source} target="_blank" rel="noopener noreferrer">
+                Visit event source <ArrowUpRight size={16} aria-hidden="true" />
+              </a>
+            )}
+            <Link className="event-calendar-link" href={`/events/${event.slug}/calendar`} prefetch={false} download>
+              <CalendarDays size={17} aria-hidden="true" /> Download calendar event
+            </Link>
+            {verified && !bookmark?.error && (
+              <ActionForm
+                action={saveBookmark.bind(null, event.id, !!bookmark?.data)}
+                submit={bookmark?.data ? "Remove bookmark" : "Bookmark event"}
+              />
+            )}
+          </section>
+          {verified && (
+            <details className="event-report">
+              <summary><Flag size={16} aria-hidden="true" /> Report incorrect information</summary>
+              <ActionForm
+                action={reportItem.bind(null, "event", event.id)}
+                submit="Send report"
+              >
+                <label>
+                  Reason
+                  <textarea name="reason" minLength={10} maxLength={1000} required />
+                </label>
+              </ActionForm>
+            </details>
+          )}
+          <p className="event-detail-disclaimer">Event information can change. Confirm dates and registration details with the organizer.</p>
+        </aside>
+      </div>
     </article>
   );
 }
