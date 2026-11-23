@@ -889,3 +889,23 @@ dl.event-grid dd { font-size: 2rem; font-weight: 840; letter-spacing: -.06em; co
   .mobile-account-link:hover { color: var(--primary); background: #f7f6ff; }
   .mobile-menu { margin-left: 0; }
 }
+
+
+/* Compact mobile filtering without hiding search or category */
+.filter-options-checkbox { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.filter-options-toggle { display: none; }
+@media (max-width: 610px) {
+  .filter-options-toggle { display: flex; align-items: center; justify-content: center; gap: .55rem;
+    padding: .82rem 1rem; border: 1px solid #dfe4ef; border-radius: 12px;
+    color: #5c6481; background: #fafbff; cursor: pointer; font-size: .86rem; font-weight: 760; }
+  .filter-options-toggle > svg:last-child { margin-left: auto; }
+  .filter-options-checkbox:checked + .filter-options-toggle { color: var(--primary); background: #f0efff; border-color: #c7c0ff; }
+  .filter-options-checkbox:checked + .filter-options-toggle > svg:last-child { transform: rotate(180deg); }
+  .filter-options-checkbox:focus-visible + .filter-options-toggle { outline: 3px solid #837cf9; outline-offset: 3px; }
+  .filters-panel .filter-top > label:nth-child(n+3) { display: none; }
+  .filters-panel .filter-bottom > label,
+  .filters-panel .filter-bottom > .date-filters { display: none; }
+  .filters-panel:has(.filter-options-checkbox:checked) .filter-top > label:nth-child(n+3),
+  .filters-panel:has(.filter-options-checkbox:checked) .filter-bottom > label { display: grid; }
+  .filters-panel:has(.filter-options-checkbox:checked) .filter-bottom > .date-filters { display: block; }
+}
