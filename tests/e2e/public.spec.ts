@@ -7,37 +7,55 @@ test("a visitor can open an event category from the landing page", async ({
   await expect(
     page.getByRole("heading", { name: /find your next hackathon/i }),
   ).toBeVisible();
-  await page.getByRole("link", { name: "Workshops" }).click();
+  await page.getByRole("link", { name: "Workshops", exact: true }).click();
   await expect(page).toHaveURL(/\/events\?category=workshop$/);
   await expect(page.getByLabel("Category")).toHaveValue("workshop");
   await page.getByLabel("Category").selectOption("coding");
-  await page.getByRole("button", { name: "Apply filter" }).click();
+  await page.getByRole("button", { name: "Apply filter" }).click({ noWaitAfter: true });
   await expect(page).toHaveURL(/[?&]category=coding(?:&|$)/);
-  expect(
-    await page.evaluate(() => document.documentElement.scrollWidth),
-  ).toBeLessThanOrEqual(
-    await page.evaluate(() => document.documentElement.clientWidth),
+  const overflow = await page.evaluate(() => {
+    const viewport = document.documentElement.clientWidth;
+    const overflowing = [...document.querySelectorAll("*")]
+      .filter((element) => {
+        const rect = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        return (
+          style.display !== "none" &&
+          style.position !== "fixed" &&
+          rect.width > 0 &&
+          (rect.right > viewport + 1 || rect.left < -1)
+        );
+      })
+      .slice(0, 12)
+      .map((element) => ({
+        element: element.tagName.toLowerCase(),
+        className: typeof element.className === "string" ? element.className : "",
+        rect: Math.round(element.getBoundingClientRect().right),
+      }));
+    return { viewport, scrollWidth: document.documentElement.scrollWidth, overflowing };
+  });
+  expect(overflow.scrollWidth, JSON.stringify(overflow)).toBeLessThanOrEqual(
+    overflow.viewport,
   );
 });
 
 test("title search, format and start date sorting work together", async ({
   page,
-}) => {
+}, testInfo) => {
   await page.goto("/events?category=hackathon");
   await page.getByLabel("Search by title").fill("fIxTuRe");
+  if (testInfo.project.name === "mobile") await page.getByText("More filters", { exact: true }).click();
   await page.getByLabel("Format").selectOption("online");
   await page.getByLabel("Sort by start date").selectOption("latest");
-  await page.getByRole("button", { name: "Apply filter" }).click();
-  await expect(page.locator(".event-card strong")).toHaveText([
+  await page.getByRole("button", { name: "Apply filter" }).click({ noWaitAfter: true });
+  await expect(page.locator(".event-card .event-title")).toHaveText([
     "Fixture Hackathon: Finals",
     "Fixture Hackathon",
   ]);
   await expect(page.getByLabel("Format")).toHaveValue("online");
   await page.getByLabel("Search by title").fill(".*");
-  await page.getByRole("button", { name: "Apply filter" }).click();
-  await expect(page.getByRole("status")).toHaveText(
-    "No published events match these filters.",
-  );
+  await page.getByRole("button", { name: "Apply filter" }).click({ noWaitAfter: true });
+  await expect(page.getByRole("status")).toContainText("No published events match these filters.");
 });
 
 test("an invalid event slug returns 404", async ({ page }) => {
@@ -110,20 +128,21 @@ test("the home agenda opens published future events and excludes past events", a
     page.getByRole("heading", { name: "Upcoming events" }),
   ).toBeVisible();
   await expect(page.getByText("Past Event")).toHaveCount(0);
-  await page.getByRole("link", { name: "Browse all dates" }).click();
+  await page.getByRole("link", { name: "All events", exact: true }).click();
   await expect(page.getByText("Past Event")).toBeVisible();
 });
 
 test("published events support venue and registration filters and calendar export", async ({
   page,
   request,
-}) => {
+}, testInfo) => {
   await page.goto("/events");
+  if (testInfo.project.name === "mobile") await page.getByText("More filters", { exact: true }).click();
   await page.getByLabel("City or venue").fill("algiers");
   await page
     .getByRole("combobox", { name: "Registration", exact: true })
     .selectOption("open");
-  await page.getByRole("button", { name: "Apply filter" }).click();
+  await page.getByRole("button", { name: "Apply filter" }).click({ noWaitAfter: true });
   await expect(page.locator(".event-card strong")).toHaveText([
     "Fixture Hackathon",
   ]);
@@ -139,4 +158,33 @@ test("published events support venue and registration filters and calendar expor
   expect((await request.get("/events/pending-fixture/calendar")).status()).toBe(
     404,
   );
+});
+
+test("mobile navigation exposes the same main destinations", async ({ page }, testInfo) => {
+  await page.goto("/");
+  if (testInfo.project.name === "mobile") {
+    await page.getByRole("button", { name: "Open navigation menu" }).click();
+    await expect(page.getByRole("navigation", { name: "Mobile navigation" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Find teammates" })).toBeVisible();
+    await page.getByRole("link", { name: "Find teammates" }).click();
+    await expect(page.getByRole("navigation", { name: "Mobile navigation" })).toHaveCount(0);
+  } else {
+    await expect(page.getByRole("navigation", { name: "Main" })).toBeVisible();
+  }
+  await expect(page.getByRole("link", { name: "HackMate home" })).toBeVisible();
+});
+
+test("landing search takes visitors to the filtered directory", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("searchbox", { name: "Search student events" }).fill("fixture");
+  await page.getByRole("button", { name: "Search", exact: true }).click();
+  await expect(page).toHaveURL(/\/events\?q=fixture$/);
+  await expect(page.getByLabel("Search by title")).toHaveValue("fixture");
+});
+
+test("capture home and directory UI for visual review", async ({ page }, testInfo) => {
+  await page.goto("/");
+  await page.screenshot({ path: testInfo.outputPath("home.png"), fullPage: true });
+  await page.goto("/events?upcoming=1");
+  await page.screenshot({ path: testInfo.outputPath("events.png"), fullPage: true });
 });

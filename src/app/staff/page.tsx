@@ -143,8 +143,18 @@ export default async function StaffPage() {
   );
 
   return (
-    <section className="shell section member-content">
-      <h1>Moderation dashboard</h1>
+    <section className="shell section member-content staff-page">
+      <div className="staff-intro">
+        <p className="section-overline">PLATFORM OPERATIONS</p>
+        <h1>Moderation dashboard</h1>
+        <p>Review event submissions, reports, and account requests from one workspace.</p>
+      </div>
+      <nav className="staff-quicknav" aria-label="Staff dashboard sections">
+        <a href="#event-moderation">Event reviews</a>
+        <a href="#staff-reports">Reports</a>
+        {admin && <a href="#verification-queue">Verification queue</a>}
+        {admin && <Link href="/staff/students">Student approvals</Link>}
+      </nav>
       {admin && (
         <Link href="/staff/students" className="staff-review-link">
           <strong>Student account approvals</strong>
@@ -157,7 +167,7 @@ export default async function StaffPage() {
           Some staff data is temporarily unavailable.
         </p>
       )}
-      <dl className="event-grid">
+      <dl className="event-grid staff-stats">
         {[
           ["Pending events", eventQueue.count],
           ["Open reports", reportQueue.count],
@@ -177,7 +187,7 @@ export default async function StaffPage() {
         ))}
       </dl>
       {admin && (
-        <div className="card-list">
+        <div className="card-list staff-section" id="verification-queue">
           <h2>Verification queue</h2>
           {verifications?.data?.length ? (
             verifications.data.map((item) => (
@@ -205,7 +215,7 @@ export default async function StaffPage() {
           )}
         </div>
       )}
-      <div className="card-list">
+      <div className="card-list staff-section" id="event-moderation">
         <h2>Event moderation</h2>
         {eventQueue.data?.length ? (
           eventQueue.data.map((item) => (
@@ -236,7 +246,7 @@ export default async function StaffPage() {
           <p>No pending events.</p>
         )}
       </div>
-      <div className="card-list">
+      <div className="card-list staff-section" id="staff-reports">
         <h2>Reports</h2>
         {reportQueue.data?.length ? (
           reportQueue.data.map((item) => (

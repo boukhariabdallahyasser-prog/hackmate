@@ -1,4 +1,11 @@
 import Link from "next/link";
+import {
+  ArrowRight,
+  ArrowUpRight,
+  BadgeCheck,
+  Search,
+  UsersRound,
+} from "lucide-react";
 import { ActionForm } from "@/components/action-form";
 import { Button } from "@/components/ui/button";
 import { httpsUrl, uuid } from "@/lib/forms";
@@ -170,25 +177,29 @@ export default async function CommunityPage({
         a.row.username.localeCompare(b.row.username),
     );
   return (
-    <section className="shell section">
-      <h1>Find teammates</h1>
-      <p>
-        Explore verified students and see what makes each recommendation
-        relevant.
-      </p>
-      <form action="/community" className="filter">
+    <section className="shell section community-page">
+      <header className="community-intro">
+        <div>
+          <p className="section-overline">YOUR NEXT COLLABORATORS</p>
+          <h1>Find your people.</h1>
+          <p>Meet verified students, compare complementary skills, and find the right teammates for your next challenge.</p>
+        </div>
+        <span className="community-intro-art" aria-hidden="true"><UsersRound size={39} /></span>
+      </header>
+      <form action="/community" className="community-filters">
         <label>
           Search by student or skill
-          <input name="q" maxLength={100} defaultValue={search} />
+          <span className="input-with-icon">
+            <Search size={17} aria-hidden="true" />
+            <input name="q" type="search" maxLength={100} defaultValue={search} placeholder="Name, skill, or username" />
+          </span>
         </label>
         <label>
           University
           <select name="university" defaultValue={university.data ?? ""}>
             <option value="">All universities</option>
             {universities.data?.map((item) => (
-              <option value={item.id} key={item.id}>
-                {item.name}
-              </option>
+              <option value={item.id} key={item.id}>{item.name}</option>
             ))}
           </select>
         </label>
@@ -197,85 +208,106 @@ export default async function CommunityPage({
           <select name="event" defaultValue={event.data ?? ""}>
             <option value="">Any event</option>
             {events.data?.map((item) => (
-              <option value={item.id} key={item.id}>
-                {item.title}
-              </option>
+              <option value={item.id} key={item.id}>{item.title}</option>
             ))}
           </select>
         </label>
-        <Button>Find teammates</Button>
+        <Button type="submit">Find teammates <ArrowRight size={16} aria-hidden="true" /></Button>
       </form>
       {event.success && events.data?.some((item) => item.id === event.data) && (
-        <ActionForm
-          action={toggleEventInterest.bind(
-            null,
-            event.data,
-            interested.has(id),
-          )}
-          submit={
-            interested.has(id)
-              ? "Remove my event interest"
-              : "Share my interest in this event"
-          }
-        />
+        <div className="interest-panel">
+          <div>
+            <strong>Interested in this event?</strong>
+            <p>Let other verified students know you&apos;re looking to collaborate.</p>
+          </div>
+          <ActionForm
+            action={toggleEventInterest.bind(null, event.data, interested.has(id))}
+            submit={interested.has(id) ? "Remove my event interest" : "Share my interest"}
+          />
+        </div>
       )}
+      <div className="community-results-header">
+        <div>
+          <h2>Student directory</h2>
+          <p>{results.length > 60 ? `Showing the first 60 of ${results.length} matches` : `${results.length} matching student${results.length === 1 ? "" : "s"}`}</p>
+        </div>
+        <span><BadgeCheck size={16} aria-hidden="true" /> Verified member space</span>
+      </div>
       {results.length === 0 ? (
-        <p className="notice">No matching profiles.</p>
+        <div className="empty-state">
+          <UsersRound size={28} aria-hidden="true" />
+          <h3>No matching profiles</h3>
+          <p>Try searching by a different skill or explore all universities.</p>
+          <Link href="/community" className="empty-action">Clear filters <ArrowRight size={16} aria-hidden="true" /></Link>
+        </div>
       ) : (
-        <div className="event-grid">
-          {results.slice(0, 60).map(({ row, data, match }) => (
-            <article className="event-card" key={row.id}>
-              {httpsUrl(row.avatar_path) && (
-                <a
-                  className="meta"
-                  href={httpsUrl(row.avatar_path)!}
-                  rel="noreferrer"
-                >
-                  Profile picture
-                </a>
-              )}
-              <strong>{row.full_name}</strong>
-              <p className="meta">
-                @{row.username}{" "}
-                {row.university_id &&
-                  `· ${universityNames.get(row.university_id) ?? ""}`}
-              </p>
-              {row.field_of_study && (
-                <p>
-                  {row.field_of_study} {row.academic_year}
-                </p>
-              )}
-              {row.bio && <p>{row.bio}</p>}
-              {row.experience && <p>{row.experience}</p>}
-              {data.skills.size > 0 && (
-                <p>{[...data.skills.keys()].join(" · ")}</p>
-              )}
-              {match.reasons.length > 0 && (
-                <ul aria-label="Reasons for recommendation">
-                  {match.reasons.slice(0, 6).map((reason) => (
-                    <li key={reason}>{reason}</li>
-                  ))}
-                </ul>
-              )}
-              <div className="text-links">
-                {[
-                  ["GitHub", row.github_url],
-                  ["LinkedIn", row.linkedin_url],
-                  ["Portfolio", row.portfolio_url],
-                ].map(([label, value]) => {
-                  const url = httpsUrl(value);
-                  return (
-                    url && (
-                      <a href={url} key={label} rel="noreferrer">
-                        {label}
-                      </a>
-                    )
-                  );
-                })}
-                <Link href={`/teams?invite=${row.id}`}>Invite to a team</Link>
-              </div>
-            </article>
-          ))}
+        <div className="profile-grid">
+          {results.slice(0, 60).map(({ row, data, match }) => {
+            const initials = row.full_name
+              .split(/\s+/)
+              .filter(Boolean)
+              .slice(0, 2)
+              .map((name) => name[0]?.toUpperCase() ?? "")
+              .join("");
+            return (
+              <article className="profile-card" key={row.id}>
+                <div className="profile-card-top">
+                  <span className="profile-avatar" aria-hidden="true">{initials || "HM"}</span>
+                  {data.availability && (
+                    <span className={data.availability === "Available" ? "profile-availability available" : "profile-availability"}>
+                      {data.availability}
+                    </span>
+                  )}
+                </div>
+                <h3>{row.full_name}</h3>
+                <p className="profile-handle">@{row.username}</p>
+                {row.university_id && (
+                  <p className="profile-campus">{universityNames.get(row.university_id) ?? "University student"}</p>
+                )}
+                {row.field_of_study && (
+                  <p className="profile-field">{row.field_of_study} {row.academic_year}</p>
+                )}
+                {row.bio && <p className="profile-bio">{row.bio}</p>}
+                {data.skills.size > 0 && (
+                  <div className="profile-skills" aria-label="Student skills">
+                    {[...data.skills.keys()].slice(0, 4).map((skill) => (
+                      <span key={skill}>{skill}</span>
+                    ))}
+                    {data.skills.size > 4 && <span>+{data.skills.size - 4} more</span>}
+                  </div>
+                )}
+                {match.reasons.length > 0 && (
+                  <div className="profile-match">
+                    <strong>Why you might connect</strong>
+                    <ul aria-label="Reasons for recommendation">
+                      {match.reasons.slice(0, 3).map((reason) => (
+                        <li key={reason}>{reason}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <div className="profile-card-footer">
+                  <div className="profile-socials">
+                    {[
+                      ["GitHub", row.github_url],
+                      ["LinkedIn", row.linkedin_url],
+                      ["Portfolio", row.portfolio_url],
+                    ].map(([label, value]) => {
+                      const url = httpsUrl(value);
+                      return url ? (
+                        <a href={url} key={label} rel="noopener noreferrer" target="_blank">
+                          {label}
+                        </a>
+                      ) : null;
+                    })}
+                  </div>
+                  <Link className="profile-invite" href={`/teams?invite=${row.id}`}>
+                    Invite to a team <ArrowUpRight size={16} aria-hidden="true" />
+                  </Link>
+                </div>
+              </article>
+            );
+          })}
         </div>
       )}
     </section>

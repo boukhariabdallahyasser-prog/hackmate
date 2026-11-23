@@ -35,6 +35,18 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run build:vinext
+      - name: Install browser for responsive UI tests
+        run: npx playwright install --with-deps chromium
+      - name: Test desktop and mobile user journeys
+        run: npm run test:e2e
+      - name: Attach UI review screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: hackmate-ui-review
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Deploy to Cloudflare
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         env:
