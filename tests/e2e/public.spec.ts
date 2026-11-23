@@ -7,7 +7,7 @@ test("a visitor can open an event category from the landing page", async ({
   await expect(
     page.getByRole("heading", { name: /find your next hackathon/i }),
   ).toBeVisible();
-  await page.getByRole("link", { name: "Workshops" }).click();
+  await page.getByRole("link", { name: "Workshops", exact: true }).click();
   await expect(page).toHaveURL(/\/events\?category=workshop$/);
   await expect(page.getByLabel("Category")).toHaveValue("workshop");
   await page.getByLabel("Category").selectOption("coding");
