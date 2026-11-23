@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowUpRight, Search, Sparkles, UsersRound } from "lucide-react";
 import { ActionForm } from "@/components/action-form";
 import { Button } from "@/components/ui/button";
 import { httpsUrl, uuid } from "@/lib/forms";
@@ -170,13 +171,18 @@ export default async function CommunityPage({
         a.row.username.localeCompare(b.row.username),
     );
   return (
-    <section className="shell section">
-      <h1>Find teammates</h1>
-      <p>
-        Explore verified students and see what makes each recommendation
-        relevant.
-      </p>
-      <form action="/community" className="filter">
+    <section className="shell section v3-community-page">
+      <div className="v3-member-hero v3-member-community" data-reveal>
+        <div>
+          <span className="v3-member-hero-label"><Sparkles size={17} aria-hidden="true" /> THE PEOPLE MAKE THE PROJECT</span>
+          <h1>Find your teammates.</h1>
+          <p>Designers, developers, builders and curious minds. Meet verified students whose strengths complement yours.</p>
+          <Link href="/account/profile" className="v3-member-hero-cta">Complete your profile <ArrowUpRight size={18} aria-hidden="true" /></Link>
+        </div>
+        <div className="v3-member-hero-symbol" aria-hidden="true"><UsersRound size={67} /></div>
+      </div>
+      <div className="v3-community-results-caption"><span><Search size={17} aria-hidden="true" /> DISCOVER STUDENTS</span><span>{results.length} matching profile{results.length === 1 ? "" : "s"}</span></div>
+      <form action="/community" className="filter v3-community-filter">
         <label>
           Search by student or skill
           <input name="q" maxLength={100} defaultValue={search} />
@@ -222,24 +228,23 @@ export default async function CommunityPage({
       {results.length === 0 ? (
         <p className="notice">No matching profiles.</p>
       ) : (
-        <div className="event-grid">
+        <div className="event-grid v3-profile-grid">
           {results.slice(0, 60).map(({ row, data, match }) => (
-            <article className="event-card" key={row.id}>
-              {httpsUrl(row.avatar_path) && (
-                <a
-                  className="meta"
-                  href={httpsUrl(row.avatar_path)!}
-                  rel="noreferrer"
-                >
-                  Profile picture
-                </a>
-              )}
-              <strong>{row.full_name}</strong>
-              <p className="meta">
-                @{row.username}{" "}
-                {row.university_id &&
-                  `· ${universityNames.get(row.university_id) ?? ""}`}
-              </p>
+            <article className="event-card v3-profile-card" key={row.id}>
+              <div className="v3-profile-card-heading">
+                <div className="v3-profile-avatar">
+                  {httpsUrl(row.avatar_path) ? (
+                    /* eslint-disable-next-line @next/next/no-img-element -- User-submitted HTTPS avatar shown directly. */
+                    <img src={httpsUrl(row.avatar_path)!} alt={`${row.full_name}'s profile avatar`} referrerPolicy="no-referrer" loading="lazy" />
+                  ) : (
+                    <span aria-hidden="true">{row.full_name.trim().split(/\s+/).slice(0, 2).map((piece) => piece.charAt(0)).join("").toUpperCase()}</span>
+                  )}
+                </div>
+                <div>
+                  <strong>{row.full_name}</strong>
+                  <p className="meta">@{row.username}{" "}{row.university_id && `· ${universityNames.get(row.university_id) ?? ""}`}</p>
+                </div>
+              </div>
               {row.field_of_study && (
                 <p>
                   {row.field_of_study} {row.academic_year}
@@ -248,7 +253,7 @@ export default async function CommunityPage({
               {row.bio && <p>{row.bio}</p>}
               {row.experience && <p>{row.experience}</p>}
               {data.skills.size > 0 && (
-                <p>{[...data.skills.keys()].join(" · ")}</p>
+                <div className="v3-profile-skills">{[...data.skills.keys()].map((skill) => <span key={skill}>{skill}</span>)}</div>
               )}
               {match.reasons.length > 0 && (
                 <ul aria-label="Reasons for recommendation">
@@ -257,7 +262,7 @@ export default async function CommunityPage({
                   ))}
                 </ul>
               )}
-              <div className="text-links">
+              <div className="text-links v3-profile-links">
                 {[
                   ["GitHub", row.github_url],
                   ["LinkedIn", row.linkedin_url],
