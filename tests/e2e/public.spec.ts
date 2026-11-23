@@ -115,8 +115,18 @@ test("the global command palette searches events and closes with Escape", async 
   page,
 }) => {
   await page.goto("/");
-  await page.keyboard.press("Control+k");
+  await page.getByRole("button", { name: "Search events and pages" }).click();
   const dialog = page.getByRole("dialog", { name: "Search HackMate" });
+  await expect(dialog).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
+
+  // Verify the app-level shortcut independently of browser-reserved Ctrl+K.
+  await page.evaluate(() => {
+    document.dispatchEvent(new KeyboardEvent("keydown", {
+      key: "k", ctrlKey: true, bubbles: true, cancelable: true,
+    }));
+  });
   await expect(dialog).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(0);
