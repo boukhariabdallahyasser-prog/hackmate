@@ -892,7 +892,8 @@ dl.event-grid dd { font-size: 2rem; font-weight: 840; letter-spacing: -.06em; co
 
 
 /* Compact mobile filtering without hiding search or category */
-.filter-options-checkbox { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.filters-panel { position: relative; }
+.filter-options-checkbox { position: absolute; left: 1px; top: 1px; width: 1px; height: 1px; opacity: 0; pointer-events: none; clip-path: inset(50%); }
 .filters-panel > label.filter-options-toggle { display: none; }
 @media (max-width: 610px) {
   .filters-panel > label.filter-options-toggle { display: flex; align-items: center; justify-content: center; gap: .55rem;
