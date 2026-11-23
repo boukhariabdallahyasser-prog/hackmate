@@ -76,9 +76,8 @@ p { line-height: 1.65; }
   transition: transform .18s ease, background .18s ease; }
 .header-join:hover, .mobile-join:hover { background: var(--primary); transform: translateY(-1px); }
 .mobile-menu { display: none; position: relative; margin-left: auto; }
-.mobile-menu summary { list-style: none; width: 44px; height: 44px; display: grid; place-items: center;
+.mobile-menu > button { width: 44px; height: 44px; display: grid; place-items: center;
   border-radius: 12px; border: 1px solid var(--border); background: #fff; color: var(--ink); }
-.mobile-menu summary::-webkit-details-marker { display: none; }
 .mobile-menu nav { position: absolute; right: 0; top: calc(100% + 12px); width: min(88vw, 310px);
   display: grid; gap: 0; padding: 10px; border-radius: 18px; background: #fff;
   box-shadow: 0 18px 50px rgba(20,25,58,.16); border: 1px solid var(--border); }
