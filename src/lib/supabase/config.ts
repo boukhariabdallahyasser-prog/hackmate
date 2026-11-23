@@ -20,8 +20,8 @@ export function supabaseConfig() {
   // explicitly isolated preview or a different configured site.
   const useProductionDefaults =
     !isPreview &&
-    process.env.NODE_ENV === "production" &&
-    (!configuredSite || configuredSite === productionSite);
+    (configuredSite === productionSite ||
+      (!configuredSite && process.env.NODE_ENV === "production"));
 
   // Cloudflare Worker runtime receives these server-only aliases as text
   // bindings. NEXT_PUBLIC_* may be inlined during a vinext/Next.js build but
