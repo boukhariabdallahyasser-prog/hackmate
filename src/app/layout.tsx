@@ -3,12 +3,11 @@ import Link from "next/link";
 import { ArrowUpRight, Code2, Heart, Mail, Zap } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { MotionLayer } from "@/components/motion-layer";
+import { siteOrigin } from "@/lib/site-url";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.APP_PUBLIC_SITE_URL ||
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    "http://localhost:3000"),
+  metadataBase: new URL(siteOrigin()),
   title: {
     default: "HackMate | Where the next thing begins",
     template: "%s | HackMate",
