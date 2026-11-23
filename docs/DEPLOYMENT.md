@@ -1,26 +1,57 @@
-# Deployment
+# Deploying HackMate
 
-## Preview
+The main target is **Cloudflare Workers** with **Supabase Auth, Postgres and private Storage**. GitHub Actions builds pull requests and builds/deploys changes merged to `main`, provided the required settings exist. Vercel is not required for this deployment.
 
-1. Create or select an isolated Supabase preview environment. Replay the three migrations against that environment. The repository keeps the two migrations already recorded in the existing hosted HackMate project.
-2. Enable email confirmations and configure email delivery. Use the [confirmation](../supabase/templates/confirmation.html) and [recovery](../supabase/templates/recovery.html) templates. Set Supabase Site URL to the canonical app URL and allow its `/auth/confirm` callback, including the recovery query variant if using the stock PKCE templates. Use a distinct Supabase project and matching Site URL for a preview that sends its own email.
-3. Load vetted university domains and bootstrap the initial super admin through the privileged database console after the user confirms their university email. See [Development](DEVELOPMENT.md) for the SQL pattern.
-4. Import the repository in Vercel and configure Preview environment variables `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`. Keep the production branch separate from the preview branch. Rebuild after setting the variables.
-5. Exercise registration, email delivery and recovery, verification uploads and reviews, event moderation, and team enrollment on the preview. Run an independent-connection capacity test before enabling public recruitment.
+> Never merge an unreviewed change as a way to test production. The repo's [AGENTS.md](../AGENTS.md) requires owner approval before production deployment, changes to hosted data, or changes that incur charges.
 
-Keep Supabase secret and service-role keys out of Vercel client environment variables and Git. For a hosted project that receives real evidence, define retention and access procedures, backups, and recovery before accepting submissions. Production migration and launch require owner approval.
+## Verified state (23 November 2026)
 
-Student approval requests are queued once the university email is confirmed. Administrators receive in-app notifications and can approve or decline requests at `/staff/students`. The initial super admin must be bootstrapped after email confirmation using the procedure in [Development](DEVELOPMENT.md). Use the exact official domain entered by the institution. Approval does not send a separate email.
+- The repository contains **four** ordered SQL migrations in `supabase/migrations/`.
+- The connected hosted Supabase project `fqydthbluwwczwaytifz` records **only the first two** migrations: `20261122214251` and `20261122214527`. The later product and student-approval features cannot be assumed to work in that database yet.
+- GitHub Actions run `45085847935` passed lint, type checking, tests and the Worker build, **but did not deploy**. Cloudflare and Supabase Actions settings were blank. Earlier workflow behavior returned success even when deployment was skipped; the workflow now reports this as a failure on `main`.
+- The last known Cloudflare production origin is `https://hackmate.yazerabdo01.workers.dev`. A successful build is not proof that this origin serves the latest commit.
 
-## ENSIA launch
+Recheck the database migration list and deployment logs before using this status as a release decision.
 
-Use [ensia.sql](../supabase/bootstrap/ensia.sql) to enable `@ensia.edu.dz` registration in the intended environment after applying migrations. The script can be rerun and stops if the domain is disabled or assigned to another institution. Confirm that the designated first administrator can receive mail at the intended address. Only grant the initial super-admin role once that user has confirmed their university email. For email delivery to students outside the Supabase project team, use a configured SMTP provider.
+## 1. Create an isolated preview first
 
-## Cloudflare Workers
+1. Create or select a **separate** Supabase preview project. Do not replay migrations over existing tables in the hosted project.
+2. Apply the four SQL migrations **in filename order** in the preview, then run the seeded local tests and real Supabase Auth/RLS/Storage integration tests. The current Vitest database tests emulate some Supabase platform tables; they do not replace a live integration test.
+3. Configure email confirmations and actual SMTP delivery. In Supabase Auth, set the Site URL to the matching preview origin and permit `/auth/confirm`, including the recovery flow. Use the [confirmation](../supabase/templates/confirmation.html) and [recovery](../supabase/templates/recovery.html) templates.
+4. After confirming the institution's real email domain, configure its registration record. The [ENSIA bootstrap SQL](../supabase/bootstrap/ensia.sql) assumes `ensia.edu.dz`; have the institution confirm that domain before using it.
+5. Confirm the designated first administrator's email before following the privileged [bootstrap procedure](DEVELOPMENT.md). Never give staff privileges based on an unconfirmed address.
+6. Test account confirmation, student approval, onboarding, evidence upload and viewing, event moderation, team capacity with independent connections, and password recovery. Verify RLS as anonymous, unverified, verified, staff and suspended accounts. Define evidence retention, deletion, backup and restore procedures before accepting real documents.
 
-HackMate can also build as a Cloudflare Worker using vinext. The repo continues to support the regular Next.js build. Supabase still handles accounts, data, and private Storage.
+Hosted production migrations and data changes need explicit owner approval and a verified backup or rollback plan.
 
-- Use Node.js 22.12 or newer for the Vite build. Run `npm ci`, then `npm run build:vinext`. Run `npm run start:vinext` to serve the built Worker locally.
-- Provide `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_SUPABASE_URL`, and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` during the build. Use the Cloudflare preview origin for `NEXT_PUBLIC_SITE_URL` when testing callbacks. Configure the matching Supabase site URL and redirect allowlist in the preview project before testing emails.
-- To deploy from an authorized workstation, sign in with `npx cf auth login`, run `npm run deploy:vinext -- --dry-run`, and then run `npm run deploy:vinext` once the intended target is approved.
-- Test sign-in, account approval, the event directory, calendar export, and private Storage on a preview before moving a production domain. The application queries live data, so this configuration does not provision an R2 cache or Durable Object.
+## 2. Configure GitHub Actions for Cloudflare
+
+On the repository's GitHub page, open **Settings → Secrets and variables → Actions**. This works in a mobile browser as well.
+
+| GitHub setting | Type | Source |
+| --- | --- | --- |
+| `NEXT_PUBLIC_SUPABASE_URL` | Repository variable | Supabase project API URL for the approved deployment |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Repository variable | Supabase publishable key for the **same** project |
+| `CLOUDFLARE_ACCOUNT_ID` | Repository variable | Cloudflare account dashboard |
+| `CLOUDFLARE_API_TOKEN` | Repository **secret** | Cloudflare token with least-privilege Workers deployment permissions |
+
+The workflow sets `NEXT_PUBLIC_SITE_URL` to the production Workers origin. Do not store a service-role key, secret key, database password, or personal access token in any `NEXT_PUBLIC_*` variable or repository file. For separate preview deployments, use different Supabase credentials and origins, not production configuration.
+
+Workflow behavior:
+- Pull requests to `main`: `npm ci`, lint, type checks, database/unit tests and a Cloudflare Worker build. **No deployment**.
+- Approved commits pushed to `main`: the same checks, then `cf deploy --prebuilt --mode production`.
+- A missing setting causes the production deployment step to **fail clearly** with the missing setting names in the Actions summary, instead of showing a misleading green deployment.
+
+Check the actual **Deploy to Cloudflare** step and verify the public origin after a successful deploy. Do not assume that a green *build* alone means the live Worker changed.
+
+## 3. Migrate an approved production database
+
+Once the preview tests pass, compare `supabase_migrations.schema_migrations` with the repository's migration files. Never re-run the first two migrations against the existing hosted project or edit their contents. Apply only the pending migration files in order through an approved process, verify schema, policies and grants, and rerun the integration checks before activating registration. Use a separate change window and backup.
+
+The Supabase CLI v3 defaults to a **local** project and requires explicit `--remote` and interactive approval or `--yes` for hosted changes. Confirm the actual CLI version and its `--help` before running commands. This repository now uses `[local_smtp]` in `supabase/config.toml` in place of the retired `[inbucket]` section.
+
+## 4. Post-deployment acceptance
+
+Test the live event directory, calendar download, sign-in, student approval, onboarding, team join and leadership workflows, staff-only moderation and private evidence retrieval. Check that the Cloudflare Workers origin returns the intended build, that Auth redirects match the canonical origin, and that sensitive responses are not cached publicly.
+
+For local development, run `npm ci`, `npx supabase start`, `npm run test:e2e`, and `npm run build:vinext` with appropriate local environment variables. See [Development](DEVELOPMENT.md) and [Security](SECURITY.md).

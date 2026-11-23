@@ -20,7 +20,7 @@ sql_paths = ["./seed.sql"]
 enabled = true
 file_size_limit = "5MiB"
 
-[inbucket]
+[local_smtp]
 enabled = true
 port = 54324
 
