@@ -2,14 +2,13 @@
 
 import { redirect } from "next/navigation";
 import { serverClient } from "@/lib/supabase/server";
+import { siteOrigin } from "@/lib/site-url";
 import { email, password, textField, type FormState } from "@/lib/forms";
 
 function callback(recovery = false) {
   const url = new URL(
     "/auth/confirm",
-    process.env.APP_PUBLIC_SITE_URL ||
-      process.env.NEXT_PUBLIC_SITE_URL ||
-      "http://localhost:3000",
+    siteOrigin(),
   );
   if (recovery) url.searchParams.set("flow", "recovery");
   return url.href;
