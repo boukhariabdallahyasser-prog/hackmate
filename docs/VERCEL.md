@@ -114,3 +114,36 @@ builds PR previews and deploys updates merged into `main`.
 
 The Cloudflare Worker config remains in the repository as a historical
 fallback; it has **not** been redeployed, deleted or modified.
+
+## Production hostname registered on 23 November 2026
+
+The currently shared Vercel production origin is
+`https://hackmate-v8jj.vercel.app`.
+
+An **exact-host, publishable-key-only fallback** lets registration initialize
+Supabase on this Vercel production hostname if the project's public settings
+were omitted. This is a reliability fallback, not a substitute for explicitly
+setting the production environment variables. It never includes a secret or
+service-role key. Preview/other Vercel hosts are excluded.
+
+Set these values on the Vercel **Production** environment (recommended):
+
+- `NEXT_PUBLIC_SITE_URL=https://hackmate-v8jj.vercel.app`
+- `NEXT_PUBLIC_SUPABASE_URL=https://fqydthbluwwczwaytifz.supabase.co`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`: the current Supabase publishable key
+
+In Supabase → **Authentication → URL Configuration**, permit exactly
+`https://hackmate-v8jj.vercel.app/auth/confirm` as a redirect URL and
+set the appropriate production **Site URL**. Leave the old Cloudflare callback
+allowed until the migration is completed, then review whether it is still used.
+
+The health route `https://hackmate-v8jj.vercel.app/api/health` returns
+`status: ready` when the deployed server can query registration eligibility
+with the publishable key. This does not guarantee that confirmation emails
+arrive, that the Auth redirect allowlist is updated, or that staff approval
+works. Test those independently with a real eligible account.
+
+**Access note:** The Vercel project may belong to a team/account not
+authorized in the connected ChatGPT Vercel integration. A successful GitHub
+commit alone does not prove that Vercel deployed it. Confirm the latest
+commit and runtime health under the actual Vercel project dashboard.
