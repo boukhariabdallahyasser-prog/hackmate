@@ -255,7 +255,7 @@ export default async function EventsPage({
                     </div>
                     <div className="event-card-main">
                       <time className="event-date-chip" dateTime={event.starts_at}>
-                        <strong>{date.day}</strong><span>{date.month}</span>
+                        <span className="event-date-day">{date.day}</span><span>{date.month}</span>
                       </time>
                       <div>
                         <strong className="event-title">{event.title}</strong>
