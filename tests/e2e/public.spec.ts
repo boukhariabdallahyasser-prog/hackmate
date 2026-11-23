@@ -214,3 +214,14 @@ test("published events always have a poster, but hidden events do not", async ({
   await page.goto("/events/fixture-hackathon");
   await expect(page.locator(".detail-poster img")).toHaveCount(1);
 });
+
+
+test("public readiness endpoint reports Supabase status without exposing credentials", async ({ request }) => {
+  const response = await request.get("/api/health");
+  expect([200, 503]).toContain(response.status());
+  expect(response.headers()["cache-control"]).toContain("no-store");
+  const body = await response.json();
+  expect(body.service).toBe("supabase");
+  expect(["ready", "unavailable"]).toContain(body.status);
+  expect(JSON.stringify(body)).not.toMatch(/sb_publishable_|service_role|SUPABASE_PUBLISHABLE_KEY/);
+});
