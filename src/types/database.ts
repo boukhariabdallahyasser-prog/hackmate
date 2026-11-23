@@ -156,18 +156,24 @@ export type Database = {
       }
       event_bookmarks: {
         Row: {
+          attendance_plan: "interested" | "planning" | "registered"
           created_at: string
           event_id: string
+          personal_note: string
           user_id: string
         }
         Insert: {
+          attendance_plan?: "interested" | "planning" | "registered"
           created_at?: string
           event_id: string
+          personal_note?: string
           user_id?: string
         }
         Update: {
+          attendance_plan?: "interested" | "planning" | "registered"
           created_at?: string
           event_id?: string
+          personal_note?: string
           user_id?: string
         }
         Relationships: [

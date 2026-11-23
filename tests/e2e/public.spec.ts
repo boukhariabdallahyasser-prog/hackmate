@@ -140,3 +140,15 @@ test("published events support venue and registration filters and calendar expor
     404,
   );
 });
+
+test("university filter narrows events and is preserved in the URL", async ({ page }) => {
+  await page.goto("/events");
+  await page.getByLabel("University").selectOption("00000000-0000-4000-8000-000000000200");
+  await page.getByRole("button", { name: "Apply filter" }).click();
+  await expect(page).toHaveURL(/university=00000000-0000-4000-8000-000000000200/);
+  await expect(page.locator(".event-card strong")).toHaveText([
+    "Fixture Hackathon: In Person",
+  ]);
+  await page.getByRole("link", { name: "Clear filters" }).click();
+  await expect(page.getByLabel("University")).toHaveValue("");
+});

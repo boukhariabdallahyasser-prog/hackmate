@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ArrowUpRight, CalendarDays, Compass, MapPin, Search, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { uuid } from "@/lib/forms";
 import { algeriaDateStart } from "@/lib/event-calendar";
 import {
   categories,
@@ -9,6 +11,7 @@ import {
   isCategory,
   isFormat,
   listEvents,
+  listEventUniversities,
   searchLimit,
   sourceStatus,
 } from "@/lib/events";
@@ -26,6 +29,7 @@ export default async function EventsPage({
     sort?: string | string[];
     upcoming?: string | string[];
     location?: string | string[];
+    university?: string | string[];
     from?: string | string[];
     to?: string | string[];
     registration?: string | string[];
@@ -41,6 +45,11 @@ export default async function EventsPage({
     typeof params.location === "string"
       ? params.location.trim().slice(0, searchLimit)
       : "";
+  const universityId =
+    typeof params.university === "string" && uuid.safeParse(params.university).success
+      ? params.university
+      : undefined;
+  const universities = await listEventUniversities();
   const from = algeriaDateStart(params.from);
   const to = algeriaDateStart(params.to);
   const dateError = from && to && from > to;
@@ -60,11 +69,20 @@ export default async function EventsPage({
         latestFirst,
         upcomingOnly,
         location,
+        universityId,
         openRegistration: registrationOpen,
         from,
         until: to ? new Date(to.getTime() + 86_400_000) : null,
         page,
       });
+
+  // Server-driven filters use uncontrolled form inputs. Remount them when
+  // navigation changes the query, otherwise cleared fields stay visually stale.
+  const formKey = [
+    category ?? "", format ?? "", search, location, universityId ?? "",
+    from?.toISOString() ?? "", to?.toISOString() ?? "",
+    String(registrationOpen), String(upcomingOnly), String(latestFirst),
+  ].join("|");
 
   function pageHref(target: number, upcoming = upcomingOnly) {
     const query = new URLSearchParams();
@@ -73,6 +91,7 @@ export default async function EventsPage({
     if (format) query.set("format", format);
     if (search) query.set("q", search);
     if (location) query.set("location", location);
+    if (universityId) query.set("university", universityId);
     if (from && typeof params.from === "string") query.set("from", params.from);
     if (to && typeof params.to === "string") query.set("to", params.to);
     if (registrationOpen) query.set("registration", "open");
@@ -83,12 +102,20 @@ export default async function EventsPage({
 
   return (
     <section className="shell section">
-      <h1>{upcomingOnly ? "Upcoming events" : "Explore events"}</h1>
-      <Link className="underlined" href={pageHref(1, !upcomingOnly)}>
-        {upcomingOnly ? "Browse all dates" : "Show upcoming only"}
-      </Link>
-      <p className="meta">Browse published technology events across Algeria.</p>
-      <form className="filter" action="/events">
+      <div className="event-page-intro">
+        <span className="section-kicker">YOUR NEXT CHALLENGE AWAITS</span>
+        <h1>{upcomingOnly ? "Upcoming events" : "Explore events"}<span className="event-heading-period">.</span></h1>
+        <p>Hackathons, workshops, competitions and more. Find the right opportunity to learn, compete and connect.</p>
+      </div>
+      <nav aria-label="Quick event filters" className="event-quick-links">
+        <Link className={!upcomingOnly && !category ? "is-active" : ""} href="/events"><Compass size={16} aria-hidden="true" /> All events</Link>
+        <Link className={upcomingOnly ? "is-active" : ""} href="/events?upcoming=1"><CalendarDays size={16} aria-hidden="true" /> Upcoming</Link>
+        <Link className={category === "hackathon" ? "is-active" : ""} href="/events?category=hackathon">Hackathons</Link>
+        <Link className={category === "workshop" ? "is-active" : ""} href="/events?category=workshop">Workshops</Link>
+        <Link className={category === "coding" ? "is-active" : ""} href="/events?category=coding">Coding</Link>
+      </nav>
+      <div className="filter-heading"><span><SlidersHorizontal size={18} aria-hidden="true" /> Refine your search</span><Link className="underlined" href={pageHref(1, !upcomingOnly)}>{upcomingOnly ? "Browse all dates" : "Show upcoming only"}</Link></div>
+      <form key={formKey} className="filter" action="/events">
         {upcomingOnly && <input name="upcoming" type="hidden" value="1" />}
         <label className="event-search" htmlFor="q">
           Search by title
@@ -143,6 +170,17 @@ export default async function EventsPage({
           />
         </label>
         <label>
+          University
+          <select name="university" defaultValue={universityId ?? ""}>
+            <option value="">All universities</option>
+            {universities.map((university) => (
+              <option value={university.id} key={university.id}>
+                {university.name}{university.city ? ` · ${university.city}` : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
           From date
           <input
             name="from"
@@ -170,11 +208,12 @@ export default async function EventsPage({
             <option value="open">Known deadline still open</option>
           </select>
         </label>
-        <Button type="submit">Apply filter</Button>
+        <Button type="submit"><Search size={17} aria-hidden="true" /> Apply filter</Button>
         {(search ||
           category ||
           format ||
           location ||
+          universityId ||
           from ||
           to ||
           registrationOpen ||
@@ -197,12 +236,14 @@ export default async function EventsPage({
         </p>
       ) : (
         <>
+          <div className="results-heading"><h2>{result.events.length ? "Discover what's happening" : "Your results"}</h2><span>{result.events.length ? "Explore events matching your interests" : "Try a different search"}</span></div>
           {result.events.length === 0 ? (
             <p className="notice" role="status">
               {search ||
               category ||
               format ||
               location ||
+              universityId ||
               from ||
               to ||
               registrationOpen
@@ -217,18 +258,13 @@ export default async function EventsPage({
                   key={event.id}
                   href={`/events/${event.slug}`}
                 >
-                  <span className="meta">
-                    {sourceStatus(event.source_status)}
-                  </span>
+                  <span className="event-card-head"><span className="event-source">{sourceStatus(event.source_status)}</span><ArrowUpRight size={19} aria-hidden="true" /></span>
+                  <span className="event-type">{categories[event.category as keyof typeof categories] ?? "Tech event"}</span>
                   <strong>{event.title}</strong>
-                  <time className="meta" dateTime={event.starts_at}>
-                    {eventDate(event.starts_at)}
-                  </time>
-                  <span>
-                    {event.location ??
-                      (isFormat(event.format)
-                        ? formats[event.format]
-                        : event.format)}
+                  <span className="event-card-details">
+                    <time dateTime={event.starts_at}><CalendarDays size={16} aria-hidden="true" />{eventDate(event.starts_at)}</time>
+                    <span><MapPin size={16} aria-hidden="true" />{event.location ??
+                      (isFormat(event.format) ? formats[event.format] : event.format)}</span>
                   </span>
                 </Link>
               ))}

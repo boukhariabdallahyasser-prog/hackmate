@@ -21,6 +21,7 @@ export default async function AccountLayout({
         {verified && (access?.role !== "student" || access.onboarded_at) && (
           <>
             <Link href="/account/profile">Profile</Link>
+            <Link href="/account/saved">Saved events</Link>
             <Link href="/account/submissions">My events</Link>
             <Link href="/community">Teammates</Link>
             <Link href="/teams">Teams</Link>

@@ -1,4 +1,4 @@
-import { ArrowUpRight, CalendarDays, Clock3, MapPin, Plus } from "lucide-react";
+import { ArrowUpRight, Bookmark, CalendarDays, Clock3, MapPin, Plus } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { signOut } from "@/app/auth/actions";
@@ -52,7 +52,7 @@ export default async function AccountPage() {
     );
   }
 
-  const [{ data: profile }, { data: announcement }, results] =
+  const [{ data: profile }, { data: announcement }, savedCount, results] =
     await Promise.all([
       client.from("profiles").select("full_name").eq("id", id).maybeSingle(),
       client
@@ -60,6 +60,10 @@ export default async function AccountPage() {
         .select("value")
         .eq("key", "announcement")
         .maybeSingle(),
+      client
+        .from("event_bookmarks")
+        .select("event_id", { count: "exact", head: true })
+        .eq("user_id", id),
       listEvents({
         search: "",
         latestFirst: false,
@@ -86,6 +90,12 @@ export default async function AccountPage() {
         </Button>
       </header>
       {announcement?.value && <p className="notice">{announcement.value}</p>}
+      <Link href="/account/saved" className="dashboard-saved-link">
+        <Bookmark size={21} aria-hidden="true" />
+        <span><strong>My saved events</strong><small>Plan your next opportunity and keep private notes</small></span>
+        <span className="dashboard-saved-count">{savedCount.error ? "View" : `${savedCount.count ?? 0} saved`}</span>
+        <ArrowUpRight size={18} aria-hidden="true" />
+      </Link>
       {!results.ok ? (
         <p className="notice" role="alert">
           Upcoming events are temporarily unavailable.

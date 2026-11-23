@@ -60,6 +60,7 @@ export async function listEvents({
   upcomingOnly,
   openRegistration,
   location,
+  universityId,
   from,
   until,
   page,
@@ -71,6 +72,7 @@ export async function listEvents({
   upcomingOnly?: boolean;
   openRegistration?: boolean;
   location?: string;
+  universityId?: string;
   from?: Date | null;
   until?: Date | null;
   page: number;
@@ -96,6 +98,7 @@ export async function listEvents({
     query = query.filter("location", "imatch", literalSearch(location));
   if (category) query = query.eq("category", category);
   if (format) query = query.eq("format", format);
+  if (universityId) query = query.eq("university_id", universityId);
   if (search) {
     query = query.filter("title", "imatch", literalSearch(search));
   }
@@ -115,6 +118,23 @@ export async function listEvents({
     events: data.slice(0, pageSize),
     hasNext: data.length > pageSize,
   } as const;
+}
+
+export async function listEventUniversities() {
+  const supabase = publicClient();
+  if (!supabase) return [];
+  const { data, error } = await supabase
+    .from("universities")
+    .select("id,name,city")
+    .eq("active", true)
+    .order("name")
+    .limit(100)
+    .abortSignal(AbortSignal.timeout(5000));
+  if (error) {
+    console.error("University filters unavailable", { code: error.code });
+    return [];
+  }
+  return data ?? [];
 }
 
 export async function getEvent(slug: string) {
