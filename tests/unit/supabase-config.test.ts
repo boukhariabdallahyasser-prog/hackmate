@@ -9,6 +9,9 @@ function withoutRuntimeBindings() {
   vi.stubEnv("SUPABASE_URL", "");
   vi.stubEnv("SUPABASE_PUBLISHABLE_KEY", "");
   vi.stubEnv("APP_PUBLIC_SITE_URL", "");
+  vi.stubEnv("VERCEL_ENV", "");
+  vi.stubEnv("VERCEL_URL", "");
+  vi.stubEnv("VERCEL_PROJECT_PRODUCTION_URL", "");
 }
 
 describe("Supabase runtime configuration", () => {
@@ -66,4 +69,37 @@ describe("Supabase runtime configuration", () => {
     }
     expect(config).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
   });
+  test("the exact HackMate Vercel production domain has a safe publishable fallback", () => {
+    withoutRuntimeBindings();
+    vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv("VERCEL_PROJECT_PRODUCTION_URL", "hackmate-v8jj.vercel.app");
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "");
+    expect(supabaseConfig()).toEqual({
+      url: "https://fqydthbluwwczwaytifz.supabase.co",
+      key: expect.stringMatching(/^sb_publishable_/),
+    });
+  });
+
+  test("unrelated Vercel origins never inherit the production Supabase project", () => {
+    withoutRuntimeBindings();
+    vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv("VERCEL_PROJECT_PRODUCTION_URL", "some-other-app.vercel.app");
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "");
+    expect(supabaseConfig()).toBeNull();
+  });
+
+  test("Vercel previews cannot use the production fallback even with the production site configured", () => {
+    withoutRuntimeBindings();
+    vi.stubEnv("VERCEL_ENV", "preview");
+    vi.stubEnv("VERCEL_URL", "hackmate-git-feature.vercel.app");
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://hackmate-v8jj.vercel.app");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "");
+    expect(supabaseConfig()).toBeNull();
+  });
+
 });
