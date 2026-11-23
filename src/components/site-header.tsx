@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ArrowUpRight, CalendarDays, Compass, Menu, Sparkles, UsersRound, X } from "lucide-react";
+import { ArrowUpRight, CalendarDays, Compass, Menu, Sparkles, UsersRound, UserRound, X } from "lucide-react";
 import { CommandSearch } from "@/components/command-search";
 
 const nav = [
@@ -49,8 +49,7 @@ export function SiteHeader() {
         </nav>
         <div className="header-tools">
           <CommandSearch />
-          <Link href="/account" className="header-account">My space <ArrowUpRight size={16} aria-hidden="true" /></Link>
-          <div className="header-mobile-search"><CommandSearch compact /></div>
+          <Link href="/account" className="header-account" aria-label="My space"><UserRound size={18} aria-hidden="true" /><span>My space</span><ArrowUpRight className="header-account-arrow" size={16} aria-hidden="true" /></Link>
           <button type="button" className="mobile-menu-trigger" onClick={() => setMenuOpen((value) => !value)}
             aria-label={menuOpen ? "Close navigation" : "Open navigation"} aria-controls="mobile-navigation" aria-expanded={menuOpen}>
             {menuOpen ? <X size={23} /> : <Menu size={23} />}
