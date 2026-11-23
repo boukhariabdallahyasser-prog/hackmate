@@ -1082,7 +1082,9 @@ a, button { -webkit-tap-highlight-color: transparent; }
 .command-dialog { width: min(100%, 42rem); overflow: hidden; background: #fff; color: #221c38; border: 1px solid #e5dff5; border-radius: 1.45rem; box-shadow: 0 38px 115px #12102781; animation: v3-dialog-in .2s cubic-bezier(.2,.7,.2,1) both; }
 .command-dialog-top { display: flex; align-items: center; gap: 1rem; padding: 1.2rem 1.3rem; border-bottom: 1px solid #eceaf4; }
 .command-dialog-top > svg { color: #815ee3; flex-shrink: 0; }
-.command-form { flex: 1; min-width: 0; display: block; }
+.command-form { flex: 1; min-width: 0; display: flex; align-items: center; gap: .5rem; }
+.command-search-submit { flex:none; display:grid; place-items:center; width:2.1rem; height:2.1rem; border-radius:.6rem; background:#eee8ff; color:#6847c9; cursor:pointer; transition:background .2s; }
+.command-search-submit:hover { background:#dcd0ff; }
 .command-form input { width: 100%; outline: none; border: 0; padding: .65rem .2rem; font-size: 1.07rem; color: #241f3f; background: transparent; }
 .command-form input:focus-visible { outline: none !important; }
 .command-form input::placeholder { color: #a19bae; }
