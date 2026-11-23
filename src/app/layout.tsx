@@ -8,6 +8,7 @@ import {
   UsersRound,
 } from "lucide-react";
 import "./globals.css";
+import "./design.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL(
