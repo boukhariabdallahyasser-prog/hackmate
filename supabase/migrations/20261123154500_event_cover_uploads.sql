@@ -21,6 +21,15 @@ with check (
   and name ~ '^[0-9a-f-]{36}/[0-9a-f-]{36}\.(jpg|png|webp)$'
 );
 
+-- Public event posters may be retrieved by guests. Never grant this on
+-- the private 'verification-evidence' bucket.
+grant select on storage.objects to anon;
+create policy "event_covers_public_read"
+on storage.objects
+for select
+to anon, authenticated
+using (bucket_id = 'event-covers');
+
 create policy "event_covers_owner_cleanup"
 on storage.objects
 for delete
